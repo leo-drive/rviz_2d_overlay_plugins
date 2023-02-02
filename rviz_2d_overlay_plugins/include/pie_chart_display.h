@@ -46,6 +46,7 @@
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/properties/color_property.hpp>
 #include <rviz_common/properties/color_property.hpp>
+#include <iomanip>
 #endif
 
 namespace rviz_2d_overlay_plugins
