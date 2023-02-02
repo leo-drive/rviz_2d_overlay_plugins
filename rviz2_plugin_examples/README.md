@@ -4,7 +4,7 @@
 
 ## Text Overlay
 
-![Alt Text](https://github.com/leo-drive/rviz_2d_overlay_plugins/tree/example_plugins/rviz2_plugin_examples/doc/text.gif)
+![Alt Text](https://github.com/leo-drive/rviz_2d_overlay_plugins/blob/example_plugins/rviz2_plugin_examples/doc/text.gif)
 
 ### **_Usage:_**
 
@@ -28,7 +28,7 @@ Create a publisher which publishes a `rviz_2d_overlay_msgs::msg::OverlayText` me
 
 ## Pie Chart Display
 
-![Alt Text](https://github.com/leo-drive/rviz_2d_overlay_plugins/tree/example_plugins/rviz2_plugin_examples/doc/pieChart.gif)
+![Alt Text](https://github.com/leo-drive/rviz_2d_overlay_plugins/blob/example_plugins/rviz2_plugin_examples/doc/pieChart.gif)
 
 Create a publisher which publishes a `std_msgs/Float32` message and publish it. On Rviz, add a Pie Chart Display and set the topic to the topic you published the message to.
 
