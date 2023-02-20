@@ -78,11 +78,11 @@ namespace rviz_2d_overlay_plugins
                                 "alpha belnding value for background",
                                 this, SLOT(updateBGAlpha()));
     text_size_property_
-      = new rviz_common::properties::IntProperty("text size", 14,
+      = new rviz_common::properties::IntProperty("text size", 9,
                               "text size",
                               this, SLOT(updateTextSize()));
     show_caption_property_
-      = new rviz_common::properties::BoolProperty("show caption", false,
+      = new rviz_common::properties::BoolProperty("show caption", true,
                                 "show caption",
                                 this, SLOT(updateShowCaption()));
     max_value_property_
@@ -276,10 +276,11 @@ namespace rviz_2d_overlay_plugins
                        s.str().c_str());
 
       // caption
+      QString name("NDT Process Time");
       if (show_caption_) {
         painter.drawText(0, height - caption_offset_, width, caption_offset_,
                          Qt::AlignCenter | Qt::AlignVCenter,
-                         getName());
+                         name);
       }
       
       // done

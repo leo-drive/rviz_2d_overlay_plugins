@@ -29,8 +29,8 @@ void PluginExample::gnss_callback(const applanix_msgs::msg::NavigationPerformanc
     double avg_vel_error=(fabs(msg->vel_rms_error.north)+fabs(msg->vel_rms_error.east)+fabs(msg->vel_rms_error.down))/3;
     double avg_orient_error=(fabs(msg->attitude_rms_error_heading)+fabs(msg->attitude_rms_error_pitch)+fabs(msg->attitude_rms_error_roll))/3;
 
-    velocity_err.text = "Velocity average Error: " + std::to_string(avg_vel_error);
-    orientation_err.text = "Orientation average Error: " + std::to_string(avg_orient_error);
+    velocity_err.text = "Velocity average RMS Error: " + std::to_string(avg_vel_error);
+    orientation_err.text = "Rotation average RMS Error: " + std::to_string(avg_orient_error);
 
     std_msgs::msg::ColorRGBA vel_color;
     if(avg_vel_error<0.004){
