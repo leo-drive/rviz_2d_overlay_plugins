@@ -51,14 +51,14 @@ namespace rviz_2d_overlay_plugins
     size_property_ = new rviz_common::properties::IntProperty("size", 128,
                                            "size of the plotter window",
                                            this, SLOT(updateSize()));
-    left_property_ = new rviz_common::properties::IntProperty("left", 128,
+    left_property_ = new rviz_common::properties::IntProperty("left", 1000,
                                            "left of the plotter window",
                                            this, SLOT(updateLeft()));
-    top_property_ = new rviz_common::properties::IntProperty("top", 128,
+    top_property_ = new rviz_common::properties::IntProperty("top", 775,
                                           "top of the plotter window",
                                           this, SLOT(updateTop()));
     fg_color_property_ = new rviz_common::properties::ColorProperty("foreground color",
-                                                 QColor(25, 255, 240),
+                                                 QColor(0, 255, 0),
                                                  "color to draw line",
                                                  this, SLOT(updateFGColor()));
     fg_alpha_property_
@@ -82,11 +82,11 @@ namespace rviz_2d_overlay_plugins
                               "text size",
                               this, SLOT(updateTextSize()));
     show_caption_property_
-      = new rviz_common::properties::BoolProperty("show caption", true,
+      = new rviz_common::properties::BoolProperty("show caption", false,
                                 "show caption",
                                 this, SLOT(updateShowCaption()));
     max_value_property_
-      = new rviz_common::properties::FloatProperty("max value", 1.0,
+      = new rviz_common::properties::FloatProperty("max value", 100.0,
                                 "max value of pie chart",
                                 this, SLOT(updateMaxValue()));
     min_value_property_
@@ -95,7 +95,7 @@ namespace rviz_2d_overlay_plugins
                                 this, SLOT(updateMinValue()));
     auto_color_change_property_
       = new rviz_common::properties::BoolProperty("auto color change",
-                               false,
+                               true,
                                "change the color automatically",
                                this, SLOT(updateAutoColorChange()));
     max_color_property_
@@ -106,17 +106,17 @@ namespace rviz_2d_overlay_plugins
 
     med_color_property_
       = new rviz_common::properties::ColorProperty("med color",
-                                QColor(255, 0, 0),
+                                QColor(0, 255, 0),
                                 "only used if auto color change is set to True.",
                                 this, SLOT(updateMedColor()));
 
     max_color_threshold_property_
-      = new rviz_common::properties::FloatProperty("max color change threthold", 0,
+      = new rviz_common::properties::FloatProperty("max color change threthold", 0.5,
                                   "change the max color at threshold",
                                   this, SLOT(updateMaxColorThreshold()));
    
     med_color_threshold_property_
-      = new rviz_common::properties::FloatProperty("med color change threthold", 0,
+      = new rviz_common::properties::FloatProperty("med color change threthold", 0.0,
                                   "change the med color at threshold ",
                                   this, SLOT(updateMedColorThreshold()));
     
@@ -140,7 +140,7 @@ namespace rviz_2d_overlay_plugins
     rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
     static int count = 0;
     std::stringstream ss;
-    ss << "PieChartDisplayObject" << count++;
+    ss << "ndt_exe_time_ms" << count++;
     overlay_.reset(new rviz_2d_overlay_plugins::OverlayObject(ss.str()));
     onEnable();
     updateSize();

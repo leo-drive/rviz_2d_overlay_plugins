@@ -26,8 +26,11 @@ find_package(rviz_2d_overlay_plugins REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(tier4_debug_msgs REQUIRED)
+find_package(applanix_msgs REQUIRED)
 
-set (msg_file msg/Float32Stamped.msg)
+set (msg_file 
+msg/Float32Stamped.msg
+)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_file}
@@ -54,6 +57,7 @@ ament_target_dependencies(plugin_example
         rviz_2d_overlay_plugins
         sensor_msgs
         tier4_debug_msgs
+        applanix_msgs
         )
 
 
