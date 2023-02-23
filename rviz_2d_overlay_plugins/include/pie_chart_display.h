@@ -35,7 +35,7 @@
  *********************************************************************/
 #ifndef JSK_RVIZ_PLUGINS_PIE_CHART_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_PIE_CHART_DISPLAY_H_
-#include <std_msgs/msg/float32.hpp>
+#include "rviz_2d_overlay_msgs/msg/pie_chart.hpp"
 #ifndef Q_MOC_RUN
 #include <rviz_common/ros_topic_display.hpp>
 #include "overlay_utils.hpp"
@@ -52,7 +52,7 @@
 namespace rviz_2d_overlay_plugins
 {
   class PieChartDisplay
-    : public rviz_common::RosTopicDisplay<std_msgs::msg::Float32>
+    : public rviz_common::RosTopicDisplay<rviz_2d_overlay_msgs::msg::PieChart>
   {
     Q_OBJECT
   public:
@@ -70,7 +70,7 @@ namespace rviz_2d_overlay_plugins
     virtual void onEnable();
     virtual void onDisable();
     virtual void onInitialize();
-    virtual void processMessage(std_msgs::msg::Float32::ConstSharedPtr msg);
+    virtual void processMessage(rviz_2d_overlay_msgs::msg::PieChart::ConstSharedPtr msg);
     virtual void drawPlot(double val);
     virtual void update(float wall_dt, float ros_dt);
     // properties
@@ -112,6 +112,10 @@ namespace rviz_2d_overlay_plugins
     double max_color_threshold_;
     double med_color_threshold_;
     float data_;
+    QString caption_;
+    HorizontalAlignment h_align_;
+    VerticalAlignment v_align_;
+    bool once_;
     bool update_required_;
     bool first_time_;
     rviz_2d_overlay_plugins::OverlayObject::SharedPtr overlay_;

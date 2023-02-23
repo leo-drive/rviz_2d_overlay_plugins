@@ -35,6 +35,7 @@
  *********************************************************************/
 
 #include "pie_chart_display.h"
+#include "rviz_2d_overlay_msgs/msg/pie_chart.hpp"
 
 #include <OgreMaterialManager.h>
 #include <OgreTextureManager.h>
@@ -51,10 +52,10 @@ namespace rviz_2d_overlay_plugins
     size_property_ = new rviz_common::properties::IntProperty("size", 128,
                                            "size of the plotter window",
                                            this, SLOT(updateSize()));
-    left_property_ = new rviz_common::properties::IntProperty("left", 1000,
+    left_property_ = new rviz_common::properties::IntProperty("left", 128,
                                            "left of the plotter window",
                                            this, SLOT(updateLeft()));
-    top_property_ = new rviz_common::properties::IntProperty("top", 775,
+    top_property_ = new rviz_common::properties::IntProperty("top", 128,
                                           "top of the plotter window",
                                           this, SLOT(updateTop()));
     fg_color_property_ = new rviz_common::properties::ColorProperty("foreground color",
@@ -169,24 +170,43 @@ namespace rviz_2d_overlay_plugins
       if (update_required_) {
           update_required_ = false;
           overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
-          overlay_->setPosition(left_, top_);
+
+          overlay_->setPosition(left_, top_, h_align_, v_align_);
           overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
           drawPlot(data_);
       }
   }
 
-  void PieChartDisplay::processMessage(std_msgs::msg::Float32::ConstSharedPtr msg)
+  void PieChartDisplay::processMessage(rviz_2d_overlay_msgs::msg::PieChart::ConstSharedPtr msg)
   {
     std::lock_guard lock(mutex_);
 
     if (!overlay_->isVisible()) {
       return;
     }
-    if (data_ != msg->data || first_time_) {
-      first_time_ = false;
-      data_ = msg->data;
-      update_required_ = true;
-    }
+//    if (data_ != msg->data || first_time_) {
+//      first_time_ = false;
+//      data_ = msg->data;
+//      update_required_ = true;
+//    }
+    data_ = msg->data;
+//    fg_color_ = msg->fg_color;
+    caption_ = QString(msg->caption.c_str());
+    h_align_ = HorizontalAlignment{msg->horizontal_alignment};
+    v_align_ = VerticalAlignment{msg->vertical_alignment};
+    fg_color_ = QColor(msg->fg_color.r * 255.0, msg->fg_color.g * 255.0, msg->fg_color.b * 255.0,
+                       msg->fg_color.a * 255.0);
+//    left_property_ = new rviz_common::properties::IntProperty("left", msg->horizontal_distance,
+//                                "left position of pie chart",
+//                                this, SLOT(updateLeft()));
+//    left_ = left_property_->getInt();
+//    top_property_ = new rviz_common::properties::IntProperty("top", msg->vertical_distance,
+//                                "top position of pie chart",
+//                                this, SLOT(updateTop()));
+    top_ = top_property_->getInt();
+
+    update_required_ = true;
+
   }
   
   void PieChartDisplay::drawPlot(double val)
@@ -270,17 +290,16 @@ namespace rviz_2d_overlay_plugins
       painter.setFont(font);
       painter.setPen(QPen(fg_color, value_line_width, Qt::SolidLine));
       std::ostringstream s;
-      s << std::fixed << std::setprecision(2) << val;
+      s << std::fixed << std::setprecision(2) << val << " ms" ;
       painter.drawText(0, 0, width, height - caption_offset_,
                        Qt::AlignCenter | Qt::AlignVCenter,
                        s.str().c_str());
 
       // caption
-      QString name("NDT Process Time");
       if (show_caption_) {
         painter.drawText(0, height - caption_offset_, width, caption_offset_,
                          Qt::AlignCenter | Qt::AlignVCenter,
-                         name);
+                         caption_);
       }
       
       // done
