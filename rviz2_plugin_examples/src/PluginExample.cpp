@@ -26,9 +26,9 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
     pieChart.data = static_cast<float>(msg->data);
     pieChart.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
     pieChart.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    pieChart.caption = "NDT: ";
-//    pieChart.horizontal_distance = static_cast<int32_t>(128);
-//    pieChart.vertical_distance = static_cast<int32_t>(128);
+    pieChart.caption = "NDT Process Time";
+    pieChart.horizontal_distance = static_cast<int32_t>(64);
+    pieChart.vertical_distance = static_cast<int32_t>(64);
 
     double time_err_color_min = 20.0;
     double time_err_color_max = 100.0;

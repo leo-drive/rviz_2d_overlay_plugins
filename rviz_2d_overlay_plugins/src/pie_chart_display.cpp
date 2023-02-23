@@ -203,7 +203,9 @@ namespace rviz_2d_overlay_plugins
 //    top_property_ = new rviz_common::properties::IntProperty("top", msg->vertical_distance,
 //                                "top position of pie chart",
 //                                this, SLOT(updateTop()));
-    top_ = top_property_->getInt();
+//    top_ = top_property_->getInt();
+    left_ = msg->horizontal_distance;
+    top_ = msg->vertical_distance;
 
     update_required_ = true;
 
