@@ -13,6 +13,7 @@ find_package(std_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/OverlayText.msg"
         "msg/PieChart.msg"
+        "msg/Plotter2D.msg"
         DEPENDENCIES
         std_msgs
         )

@@ -13,6 +13,7 @@
 
 #include <rviz_2d_overlay_msgs/msg/overlay_text.hpp>
 #include <rviz_2d_overlay_msgs/msg/pie_chart.hpp>
+#include <rviz_2d_overlay_msgs/msg/plotter2_d.hpp>
 #include "pie_chart_display.h"
 
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
@@ -27,6 +28,7 @@ private:
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::OverlayText>::SharedPtr velocity_error_pub_;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::OverlayText>::SharedPtr orientation_error_pub_;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::PieChart>::SharedPtr mPieChartPublisher;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr plotterPublisher;
     rclcpp::Subscription<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr ndt_sub;
     rclcpp::Subscription<applanix_msgs::msg::NavigationPerformanceGsof50>::SharedPtr gnss_sub;
 

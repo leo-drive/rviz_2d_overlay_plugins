@@ -9,6 +9,7 @@ PluginExample::PluginExample() : Node("plugin_example") {
     velocity_error_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("velocity_error", 10);
     orientation_error_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("orientation_error", 10);
     mPieChartPublisher = create_publisher<rviz_2d_overlay_msgs::msg::PieChart>("pie_chart", 10);
+    plotterPublisher = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("plotter", 10);
     ndt_sub = create_subscription<tier4_debug_msgs::msg::Float32Stamped>(
             "/localization/pose_estimator/exe_time_ms", 100,
             std::bind(&PluginExample::ndt_callback, this, std::placeholders::_1));
@@ -31,7 +32,7 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
     pieChart.vertical_distance = static_cast<int32_t>(64);
 
     double time_err_color_min = 20.0;
-    double time_err_color_max = 100.0;
+    double time_err_color_max = 70.0;
     double time_err_temp =
             (((msg->data - time_err_color_min) / (time_err_color_max - time_err_color_min)) * (1.0 - 0.0)) + 0.0;
     std_msgs::msg::ColorRGBA color;
@@ -53,6 +54,18 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
     }
     pieChart.fg_color = color;
     mPieChartPublisher->publish(pieChart);
+
+    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
+    plotterMsg.data = static_cast<float>(msg->data);
+    plotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::TOP;
+    plotterMsg.caption = "NDT Process Time";
+    plotterMsg.horizontal_distance = static_cast<int32_t>(32);
+    plotterMsg.vertical_distance = static_cast<int32_t>(32);
+    plotterMsg.width = 128;
+    plotterMsg.height = 128;
+    plotterMsg.fg_color = color;
+    plotterPublisher->publish(plotterMsg);
 }
 
 void PluginExample::gnss_callback(const applanix_msgs::msg::NavigationPerformanceGsof50::SharedPtr msg) {

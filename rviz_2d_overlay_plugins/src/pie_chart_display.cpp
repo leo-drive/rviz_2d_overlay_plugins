@@ -112,7 +112,7 @@ namespace rviz_2d_overlay_plugins
                                 this, SLOT(updateMedColor()));
 
     max_color_threshold_property_
-      = new rviz_common::properties::FloatProperty("max color change threthold", 0.5,
+      = new rviz_common::properties::FloatProperty("max color change threthold", 0.7,
                                   "change the max color at threshold",
                                   this, SLOT(updateMaxColorThreshold()));
    
