@@ -6,9 +6,9 @@
 
 PluginExample::PluginExample() : Node("plugin_example") {
 
-    velocity_error_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("velocity_error", 10);
-    orientation_error_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("orientation_error", 10);
-    mPieChartPublisher = create_publisher<rviz_2d_overlay_msgs::msg::PieChart>("pie_chart", 10);
+    velocity_error_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("velocity_error", 10);
+    orientation_error_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("orientation_error", 10);
+    mPieChartPublisher = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("pie_chart", 10);
     plotterPublisher = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("plotter", 10);
     ndt_sub = create_subscription<tier4_debug_msgs::msg::Float32Stamped>(
             "/localization/pose_estimator/exe_time_ms", 100,
@@ -19,17 +19,6 @@ PluginExample::PluginExample() : Node("plugin_example") {
 }
 
 void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg) {
-//    std_msgs::msg::Float32 pieChartMsg;
-
-
-
-    rviz_2d_overlay_msgs::msg::PieChart pieChart;
-    pieChart.data = static_cast<float>(msg->data);
-    pieChart.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    pieChart.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    pieChart.caption = "NDT Process Time";
-    pieChart.horizontal_distance = static_cast<int32_t>(64);
-    pieChart.vertical_distance = static_cast<int32_t>(64);
 
     double time_err_color_min = 20.0;
     double time_err_color_max = 70.0;
@@ -52,18 +41,18 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
         color.b = 0.0f;
         color.a = 1.0f;
     }
-    pieChart.fg_color = color;
-    mPieChartPublisher->publish(pieChart);
 
     rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
     plotterMsg.data = static_cast<float>(msg->data);
     plotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::TOP;
+    plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
     plotterMsg.caption = "NDT Process Time";
     plotterMsg.horizontal_distance = static_cast<int32_t>(32);
     plotterMsg.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg.width = 128;
+    plotterMsg.width = 172;
     plotterMsg.height = 128;
+    plotterMsg.min_value = 0.0;
+    plotterMsg.max_value = 100.0;
     plotterMsg.fg_color = color;
     plotterPublisher->publish(plotterMsg);
 }
@@ -72,14 +61,8 @@ void PluginExample::gnss_callback(const applanix_msgs::msg::NavigationPerformanc
 
 
     // [VELOCITY ERROR]
-    rviz_2d_overlay_msgs::msg::OverlayText velocity_err = rviz_2d_overlay_msgs::msg::OverlayText();
-
     double avg_vel_error =
             (fabs(msg->vel_rms_error.north) + fabs(msg->vel_rms_error.east) + fabs(msg->vel_rms_error.down)) / 3;
-
-    char vel_err[100];
-    sprintf(vel_err, "Velocity average RMS Error: %1.4f m/s", avg_vel_error);
-    velocity_err.text = vel_err;
 
     double vel_err_color_min = 0.0045;
     double vel_err_color_max = 0.008;
@@ -103,27 +86,24 @@ void PluginExample::gnss_callback(const applanix_msgs::msg::NavigationPerformanc
         vel_color.a = 1.0f;
     }
 
-    velocity_err.fg_color = vel_color;
-
-    velocity_err.height = static_cast<int32_t>(32); //
-    velocity_err.width = static_cast<int32_t>(500); // Kapladığı maksimum alanın boyutları
-
-    velocity_err.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
-    velocity_err.horizontal_distance = static_cast<int32_t>(0);
-
-    velocity_err.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::TOP;
-    velocity_err.vertical_distance = static_cast<int32_t>(32);
-
-    velocity_err.text_size = static_cast<int32_t>(12);
+    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
+    plotterMsg.data = static_cast<float>(avg_vel_error);
+    plotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    plotterMsg.caption = "Linear Vel. Av. Err.";
+    plotterMsg.horizontal_distance = static_cast<int32_t>(236);
+    plotterMsg.vertical_distance = static_cast<int32_t>(32);
+    plotterMsg.width = 172;
+    plotterMsg.height = 128;
+    plotterMsg.min_value = 0.0;
+    plotterMsg.max_value = 0.012;
+    plotterMsg.fg_color = vel_color;
+    velocity_error_pub_->publish(plotterMsg);
     // [VELOCITY ERROR]
 
     // [ORIENTATION ERROR]
-    rviz_2d_overlay_msgs::msg::OverlayText orientation_err = rviz_2d_overlay_msgs::msg::OverlayText();
     double avg_orient_error = (fabs(msg->attitude_rms_error_heading) + fabs(msg->attitude_rms_error_pitch) +
                                fabs(msg->attitude_rms_error_roll)) / 3;
-    char orient_err[100];
-    sprintf(orient_err, "Orientation average RMS Error: %1.4f deg", avg_orient_error);
-    orientation_err.text = orient_err;
 
     double orient_err_color_min = 0.035;
     double orient_err_color_max = 0.08;
@@ -148,22 +128,20 @@ void PluginExample::gnss_callback(const applanix_msgs::msg::NavigationPerformanc
         orient_color.a = 1.0f;
     }
 
-    orientation_err.fg_color = orient_color;
-
-    orientation_err.height = static_cast<int32_t>(32);
-    orientation_err.width = static_cast<int32_t>(500);
-
-    orientation_err.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
-    orientation_err.horizontal_distance = static_cast<int32_t>(0);
-
-    orientation_err.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::TOP;
-    orientation_err.vertical_distance = static_cast<int32_t>(64);
-
-    orientation_err.text_size = static_cast<int32_t>(12);
+    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg2;
+    plotterMsg2.data = static_cast<float>(avg_orient_error);
+    plotterMsg2.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    plotterMsg2.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    plotterMsg2.caption = "Orientation Vel. Av. Err.";
+    plotterMsg2.horizontal_distance = static_cast<int32_t>(440);
+    plotterMsg2.vertical_distance = static_cast<int32_t>(32);
+    plotterMsg2.width = 172;
+    plotterMsg2.height = 128;
+    plotterMsg2.min_value = 0.0;
+    plotterMsg2.max_value = 0.12;
+    plotterMsg2.fg_color = orient_color;
+    orientation_error_pub_->publish(plotterMsg2);
     // [ORIENTATION ERROR]
-
-    velocity_error_pub_->publish(velocity_err);
-    orientation_error_pub_->publish(orientation_err);
 }
 
 int main(int argc, char **argv) {

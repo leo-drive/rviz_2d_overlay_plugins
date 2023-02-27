@@ -234,11 +234,11 @@ namespace rviz_2d_overlay_plugins {
             }
             if (show_value_) {
                 QFont font = painter.font();
-                font.setPointSize(w / 4);
+                font.setPointSize(text_size_);
                 font.setBold(true);
                 painter.setFont(font);
                 std::ostringstream ss;
-                ss << std::fixed << std::setprecision(2) << buffer_[buffer_.size() - 1];
+                ss << std::fixed << std::setprecision(4) << buffer_[buffer_.size() - 1];
                 painter.drawText(0, -20, w, h,
                                  Qt::AlignCenter | Qt::AlignVCenter,
                                  ss.str().c_str());
@@ -294,6 +294,9 @@ namespace rviz_2d_overlay_plugins {
                            msg->fg_color.a * 255.0);
         texture_width_ = msg->width;
         texture_height_ = msg->height;
+
+        max_value_ = msg->max_value;
+        min_value_ = msg->min_value;
 
         draw_required_ = true;
     }

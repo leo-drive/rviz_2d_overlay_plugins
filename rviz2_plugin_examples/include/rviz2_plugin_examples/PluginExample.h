@@ -25,9 +25,9 @@ public:
     PluginExample();
 
 private:
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::OverlayText>::SharedPtr velocity_error_pub_;
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::OverlayText>::SharedPtr orientation_error_pub_;
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::PieChart>::SharedPtr mPieChartPublisher;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr velocity_error_pub_;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr orientation_error_pub_;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mPieChartPublisher;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr plotterPublisher;
     rclcpp::Subscription<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr ndt_sub;
     rclcpp::Subscription<applanix_msgs::msg::NavigationPerformanceGsof50>::SharedPtr gnss_sub;

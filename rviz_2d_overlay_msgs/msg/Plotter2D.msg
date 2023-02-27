@@ -16,6 +16,9 @@ uint8 vertical_alignment # one of TOP, CENTER, BOTTOM
 uint8 width
 uint8 height
 
+float32 max_value
+float32 min_value
+
 std_msgs/ColorRGBA fg_color
 
 string caption
