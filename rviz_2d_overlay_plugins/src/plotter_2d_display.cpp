@@ -238,7 +238,8 @@ namespace rviz_2d_overlay_plugins {
                 font.setBold(true);
                 painter.setFont(font);
                 std::ostringstream ss;
-                ss << std::fixed << std::setprecision(4) << buffer_[buffer_.size() - 1];
+                std::string unit_char = unit_.toUtf8().constData();
+                ss << std::fixed << std::setprecision(4) << buffer_[buffer_.size() - 1] << " " << unit_char;
                 painter.drawText(0, -20, w, h,
                                  Qt::AlignCenter | Qt::AlignVCenter,
                                  ss.str().c_str());
@@ -290,6 +291,7 @@ namespace rviz_2d_overlay_plugins {
         left_ = msg->horizontal_distance;
         top_ = msg->vertical_distance;
         caption_ = QString(msg->caption.c_str());
+        unit_ = QString(msg->unit.c_str());
         fg_color_ = QColor(msg->fg_color.r * 255.0, msg->fg_color.g * 255.0, msg->fg_color.b * 255.0,
                            msg->fg_color.a * 255.0);
         texture_width_ = msg->width;

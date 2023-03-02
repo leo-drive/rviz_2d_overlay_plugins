@@ -66,6 +66,7 @@ namespace rviz_2d_overlay_plugins {
         double min_value_;
         double max_value_;
         QString caption_;
+        QString unit_;
         int width_;
         int height_;
         int left_;

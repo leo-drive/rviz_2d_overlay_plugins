@@ -54,6 +54,7 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
     plotterMsg.min_value = 0.0;
     plotterMsg.max_value = 100.0;
     plotterMsg.fg_color = color;
+    plotterMsg.unit = "ms";
     plotterPublisher->publish(plotterMsg);
 }
 
@@ -98,6 +99,7 @@ void PluginExample::gnss_callback(const applanix_msgs::msg::NavigationPerformanc
     plotterMsg.min_value = 0.0;
     plotterMsg.max_value = 0.012;
     plotterMsg.fg_color = vel_color;
+    plotterMsg.unit = "m/s";
     velocity_error_pub_->publish(plotterMsg);
     // [VELOCITY ERROR]
 
@@ -140,6 +142,7 @@ void PluginExample::gnss_callback(const applanix_msgs::msg::NavigationPerformanc
     plotterMsg2.min_value = 0.0;
     plotterMsg2.max_value = 0.12;
     plotterMsg2.fg_color = orient_color;
+    plotterMsg2.unit = "rad";
     orientation_error_pub_->publish(plotterMsg2);
     // [ORIENTATION ERROR]
 }

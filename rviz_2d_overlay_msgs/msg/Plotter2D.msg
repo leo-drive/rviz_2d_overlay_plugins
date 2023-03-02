@@ -22,4 +22,6 @@ float32 min_value
 std_msgs/ColorRGBA fg_color
 
 string caption
+string unit
+
 float32 data
