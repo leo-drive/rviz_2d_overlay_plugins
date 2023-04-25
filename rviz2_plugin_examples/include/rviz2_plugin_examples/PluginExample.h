@@ -9,6 +9,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float32.hpp"
+#include "sensor_msgs/msg/nav_sat_fix.hpp"
 #include "rviz_common/ros_topic_display.hpp"
 
 #include <rviz_2d_overlay_msgs/msg/overlay_text.hpp>
@@ -25,16 +26,17 @@ public:
     PluginExample();
 
 private:
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr velocity_error_pub_;
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr orientation_error_pub_;
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mPieChartPublisher;
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr plotterPublisher;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub1;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub2;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub3;
+
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mNdtTime;
+
     rclcpp::Subscription<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr ndt_sub;
-    rclcpp::Subscription<applanix_msgs::msg::NavigationPerformanceGsof50>::SharedPtr gnss_sub;
+    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gnss_sub;
 
     void ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg);
-
-    void gnss_callback(const applanix_msgs::msg::NavigationPerformanceGsof50::SharedPtr msg);
+    void gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
 };
 
 

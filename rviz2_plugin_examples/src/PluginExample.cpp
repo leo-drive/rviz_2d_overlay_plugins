@@ -6,15 +6,16 @@
 
 PluginExample::PluginExample() : Node("plugin_example") {
 
-    velocity_error_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("velocity_error", 10);
-    orientation_error_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("orientation_error", 10);
-    mPieChartPublisher = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("pie_chart", 10);
-    plotterPublisher = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("plotter", 10);
+    mErrorPub1 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_1", 10);
+    mErrorPub2 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_2", 10);
+    mErrorPub3 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_3", 10);
+    mNdtTime = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_time", 10);
+
     ndt_sub = create_subscription<tier4_debug_msgs::msg::Float32Stamped>(
             "/localization/pose_estimator/exe_time_ms", 100,
             std::bind(&PluginExample::ndt_callback, this, std::placeholders::_1));
-    gnss_sub = create_subscription<applanix_msgs::msg::NavigationPerformanceGsof50>(
-            "/lvx_client/gsof/ins_solution_rms_50", 100,
+    gnss_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
+            "/sensing/gnss/clap/ros/gps_nav_sat_fix", 100,
             std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
 }
 
@@ -55,96 +56,121 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
     plotterMsg.max_value = 100.0;
     plotterMsg.fg_color = color;
     plotterMsg.unit = "ms";
-    plotterPublisher->publish(plotterMsg);
+    mNdtTime->publish(plotterMsg);
 }
 
-void PluginExample::gnss_callback(const applanix_msgs::msg::NavigationPerformanceGsof50::SharedPtr msg) {
+void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg) {
 
-
-    // [VELOCITY ERROR]
-    double avg_vel_error =
-            (fabs(msg->vel_rms_error.north) + fabs(msg->vel_rms_error.east) + fabs(msg->vel_rms_error.down)) / 3;
-
-    double vel_err_color_min = 0.0045;
-    double vel_err_color_max = 0.008;
-    double vel_err_temp =
-            (((avg_vel_error - vel_err_color_min) / (vel_err_color_max - vel_err_color_min)) * (1.0 - 0.0)) + 0.0;
-    std_msgs::msg::ColorRGBA vel_color;
-    if (avg_vel_error < 0.0045) {
-        vel_color.r = 0.0f;
-        vel_color.g = 1.0f;
-        vel_color.b = 0.0f;
-        vel_color.a = 1.0f;
-    } else if (0.004 < avg_vel_error && avg_vel_error < 0.008) {
-        vel_color.r = static_cast<float>(vel_err_temp);
-        vel_color.g = 1.0f - static_cast<float>(vel_err_temp);
-        vel_color.b = 0.0f;
-        vel_color.a = 1.0f;
+    double error_1 = msg->position_covariance[0];
+    double min_error_1 = 1.0;
+    double max_error_1 = 5.0;
+    double error_1_temp =
+            (((error_1 - min_error_1) / (max_error_1 - min_error_1)) * (1.0 - 0.0)) + 0.0;
+    std_msgs::msg::ColorRGBA color;
+    if (error_1 < min_error_1) {
+        color.r = 0.0f;
+        color.g = 1.0f;
+        color.b = 0.0f;
+        color.a = 1.0f;
+    } else if (min_error_1 < error_1 && error_1 < max_error_1) {
+        color.r = static_cast<float>(error_1_temp);
+        color.g = 1.0f - static_cast<float>(error_1_temp);
+        color.b = 0.0f;
+        color.a = 1.0f;
     } else {
-        vel_color.r = 1.0f;
-        vel_color.g = 0.0f;
-        vel_color.b = 0.0f;
-        vel_color.a = 1.0f;
+        color.r = 1.0f;
+        color.g = 0.0f;
+        color.b = 0.0f;
+        color.a = 1.0f;
     }
+    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_1;
+    plotterMsg_1.data = static_cast<float>(error_1);
+    plotterMsg_1.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    plotterMsg_1.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    plotterMsg_1.caption = "GNSS Error 1";
+    plotterMsg_1.horizontal_distance = static_cast<int32_t>(236);
+    plotterMsg_1.vertical_distance = static_cast<int32_t>(32);
+    plotterMsg_1.width = 172;
+    plotterMsg_1.height = 128;
+    plotterMsg_1.min_value = 0.0;
+    plotterMsg_1.max_value = 100.0;
+    plotterMsg_1.fg_color = color;
+    plotterMsg_1.unit = "m";
+    mErrorPub1->publish(plotterMsg_1);
 
-    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
-    plotterMsg.data = static_cast<float>(avg_vel_error);
-    plotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg.caption = "Linear Vel. Av. Err.";
-    plotterMsg.horizontal_distance = static_cast<int32_t>(236);
-    plotterMsg.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg.width = 172;
-    plotterMsg.height = 128;
-    plotterMsg.min_value = 0.0;
-    plotterMsg.max_value = 0.012;
-    plotterMsg.fg_color = vel_color;
-    plotterMsg.unit = "m/s";
-    velocity_error_pub_->publish(plotterMsg);
-    // [VELOCITY ERROR]
-
-    // [ORIENTATION ERROR]
-    double avg_orient_error = (fabs(msg->attitude_rms_error_heading) + fabs(msg->attitude_rms_error_pitch) +
-                               fabs(msg->attitude_rms_error_roll)) / 3;
-
-    double orient_err_color_min = 0.035;
-    double orient_err_color_max = 0.08;
-    double orient_err_temp =
-            (((avg_orient_error - orient_err_color_min) / (orient_err_color_max - orient_err_color_min)) *
-             (1.0 - 0.0)) + 0.0;
-    std_msgs::msg::ColorRGBA orient_color;
-    if (avg_orient_error < 0.035) {
-        orient_color.r = 0.0f;
-        orient_color.g = 1.0f;
-        orient_color.b = 0.0f;
-        orient_color.a = 1.0f;
-    } else if (0.035 < avg_orient_error && avg_orient_error < 0.08) {
-        orient_color.r = static_cast<float>(orient_err_temp);
-        orient_color.g = 1.0f - static_cast<float>(orient_err_temp);
-        orient_color.b = 0.0f;
-        orient_color.a = 1.0f;
+    double error_2 = msg->position_covariance[4];
+    double min_error_2 = 1.0;
+    double max_error_2 = 5.0;
+    double error_2_temp =
+            (((error_2 - min_error_2) / (max_error_2 - min_error_2)) * (1.0 - 0.0)) + 0.0;
+    std_msgs::msg::ColorRGBA color_2;
+    if (error_2 < min_error_2) {
+        color_2.r = 0.0f;
+        color_2.g = 1.0f;
+        color_2.b = 0.0f;
+        color_2.a = 1.0f;
+    } else if (min_error_2 < error_2 && error_2 < max_error_2) {
+        color_2.r = static_cast<float>(error_2_temp);
+        color_2.g = 1.0f - static_cast<float>(error_2_temp);
+        color_2.b = 0.0f;
+        color_2.a = 1.0f;
     } else {
-        orient_color.r = 1.0f;
-        orient_color.g = 0.0f;
-        orient_color.b = 0.0f;
-        orient_color.a = 1.0f;
+        color_2.r = 1.0f;
+        color_2.g = 0.0f;
+        color_2.b = 0.0f;
+        color_2.a = 1.0f;
     }
+    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_2;
+    plotterMsg_2.data = static_cast<float>(error_2);
+    plotterMsg_2.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    plotterMsg_2.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    plotterMsg_2.caption = "GNSS Error 2";
+    plotterMsg_2.horizontal_distance = static_cast<int32_t>(440);
+    plotterMsg_2.vertical_distance = static_cast<int32_t>(32);
+    plotterMsg_2.width = 172;
+    plotterMsg_2.height = 128;
+    plotterMsg_2.min_value = 0.0;
+    plotterMsg_2.max_value = 100.0;
+    plotterMsg_2.fg_color = color_2;
+    plotterMsg_2.unit = "m";
+    mErrorPub2->publish(plotterMsg_2);
 
-    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg2;
-    plotterMsg2.data = static_cast<float>(avg_orient_error);
-    plotterMsg2.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    plotterMsg2.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg2.caption = "Orientation Vel. Av. Err.";
-    plotterMsg2.horizontal_distance = static_cast<int32_t>(440);
-    plotterMsg2.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg2.width = 172;
-    plotterMsg2.height = 128;
-    plotterMsg2.min_value = 0.0;
-    plotterMsg2.max_value = 0.12;
-    plotterMsg2.fg_color = orient_color;
-    plotterMsg2.unit = "rad";
-    orientation_error_pub_->publish(plotterMsg2);
-    // [ORIENTATION ERROR]
+    double error_3 = msg->position_covariance[8];
+    double min_error_3 = 1.0;
+    double max_error_3 = 5.0;
+    double error_3_temp =
+            (((error_3 - min_error_3) / (max_error_3 - min_error_3)) * (1.0 - 0.0)) + 0.0;
+    std_msgs::msg::ColorRGBA color_3;
+    if (error_3 < min_error_3) {
+        color_3.r = 0.0f;
+        color_3.g = 1.0f;
+        color_3.b = 0.0f;
+        color_3.a = 1.0f;
+    } else if (min_error_3 < error_3 && error_3 < max_error_3) {
+        color_3.r = static_cast<float>(error_3_temp);
+        color_3.g = 1.0f - static_cast<float>(error_3_temp);
+        color_3.b = 0.0f;
+        color_3.a = 1.0f;
+    } else {
+        color_3.r = 1.0f;
+        color_3.g = 0.0f;
+        color_3.b = 0.0f;
+        color_3.a = 1.0f;
+    }
+    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_3;
+    plotterMsg_3.data = static_cast<float>(error_3);
+    plotterMsg_3.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    plotterMsg_3.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    plotterMsg_3.caption = "GNSS Error 3";
+    plotterMsg_3.horizontal_distance = static_cast<int32_t>(644);
+    plotterMsg_3.vertical_distance = static_cast<int32_t>(32);
+    plotterMsg_3.width = 172;
+    plotterMsg_3.height = 128;
+    plotterMsg_3.min_value = 0.0;
+    plotterMsg_3.max_value = 100.0;
+    plotterMsg_3.fg_color = color_3;
+    plotterMsg_3.unit = "m";
+    mErrorPub3->publish(plotterMsg_3);
 }
 
 int main(int argc, char **argv) {
