@@ -18,7 +18,6 @@
 #include "pie_chart_display.h"
 
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
-#include <applanix_msgs/msg/navigation_performance_gsof50.hpp>
 
 class PluginExample : public rclcpp::Node {
 
@@ -29,6 +28,7 @@ private:
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub1;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub2;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub3;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPubAvarage;
 
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mNdtTime;
 

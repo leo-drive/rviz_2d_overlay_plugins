@@ -26,7 +26,6 @@ find_package(rviz_2d_overlay_plugins REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(tier4_debug_msgs REQUIRED)
-find_package(applanix_msgs REQUIRED)
 
 include_directories(
         include
@@ -46,7 +45,6 @@ ament_target_dependencies(plugin_example
         rviz_2d_overlay_plugins
         sensor_msgs
         tier4_debug_msgs
-        applanix_msgs
         )
 
 
