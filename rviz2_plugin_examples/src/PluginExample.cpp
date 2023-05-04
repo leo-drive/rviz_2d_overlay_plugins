@@ -3,6 +3,7 @@
 //
 
 #include "rviz2_plugin_examples/PluginExample.h"
+#include "math.h"
 
 PluginExample::PluginExample() : Node("plugin_example") {
 
@@ -62,7 +63,7 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
 
 void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg) {
 
-    double error_1 = msg->position_covariance[0];
+    double error_1 = std::sqrt(msg->position_covariance[0]);
     double min_error_1 = 1.0;
     double max_error_1 = 5.0;
     double error_1_temp =
@@ -99,7 +100,7 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
     plotterMsg_1.unit = "m";
     mErrorPub1->publish(plotterMsg_1);
 
-    double error_2 = msg->position_covariance[4];
+    double error_2 = std::sqrt(msg->position_covariance[4]);
     double min_error_2 = 1.0;
     double max_error_2 = 5.0;
     double error_2_temp =
@@ -136,7 +137,7 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
     plotterMsg_2.unit = "m";
     mErrorPub2->publish(plotterMsg_2);
 
-    double error_3 = msg->position_covariance[8];
+    double error_3 = std::sqrt(msg->position_covariance[8]);
     double min_error_3 = 1.0;
     double max_error_3 = 5.0;
     double error_3_temp =
