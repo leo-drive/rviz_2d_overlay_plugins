@@ -4,21 +4,80 @@
 
 #include "rviz2_plugin_examples/PluginExample.h"
 #include "math.h"
+#include "string.h"
 
 PluginExample::PluginExample() : Node("plugin_example") {
-
+    rtkStatus = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("RTK_Status", 10);
     mErrorPub1 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_1", 10);
     mErrorPub2 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_2", 10);
     mErrorPub3 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_3", 10);
     mErrorPubAvarage = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("avarage_position_error", 10);
     mNdtTime = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_time", 10);
 
+    rtk_sub = create_subscription<sbg_driver::msg::SbgGpsPos>(
+            "/sensing/gnss/sbg/gps_pos", 100,
+            std::bind(&PluginExample::rtk_callback, this, std::placeholders::_1));
     ndt_sub = create_subscription<tier4_debug_msgs::msg::Float32Stamped>(
             "/localization/pose_estimator/exe_time_ms", 100,
             std::bind(&PluginExample::ndt_callback, this, std::placeholders::_1));
     gnss_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
             "/sensing/gnss/sbg/ros/ekf_nav_sat_fix", 100,
             std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
+}
+void PluginExample::rtk_callback(const sbg_driver::msg::SbgGpsPos::SharedPtr msg) {
+//  /sensing/gnss/sbg/gps_pos > status>type
+    std_msgs::msg::ColorRGBA color;
+    std_msgs::msg::ColorRGBA color_bg;
+    color_bg.r = 1.0f;
+    color_bg.g = 1.0f;
+    color_bg.b = 1.0f;
+    color_bg.a = 1.0f;
+
+    rviz_2d_overlay_msgs::msg::OverlayText textMsg;
+    textMsg.action = 0;
+    if(msg->status.type ==0 ){
+        textMsg.text = "GPS POSITION TYPE: \n NO_SOLUTION";
+    }
+    else if(msg->status.type == 1){
+        textMsg.text = "GPS POSITION TYPE: \n UNKNOWN_TYPE";
+    }
+    else if(msg->status.type == 2){
+        textMsg.text = "GPS POSITION TYPE: \n SINGLE";
+    }
+    else if(msg->status.type == 3){
+        textMsg.text = "GPS POSITION TYPE: \n PSRDIFF";
+    }
+    else if(msg->status.type == 4){
+        textMsg.text = "GPS POSITION TYPE: \n SBAS";
+    }
+    else if(msg->status.type == 5){
+        textMsg.text = "GPS POSITION TYPE: \n OMNISTAR";
+    }
+    else if(msg->status.type == 6){
+        textMsg.text = "GPS POSITION TYPE: \n RTK_FLOAT";
+    }
+    else if(msg->status.type == 7){
+        textMsg.text = "GPS POSITION TYPE: \n RTK_INT";
+    }
+    else if(msg->status.type == 8){
+        textMsg.text = "GPS POSITION TYPE: \n PPP_FLOAT";
+    }
+    else if(msg->status.type == 9){
+        textMsg.text = "GPS POSITION TYPE: \n PPP_INT";
+    }
+    else if(msg->status.type == 10){
+        textMsg.text = "GPS POSITION TYPE: \n FIXED";
+    }
+
+//    textMsg.text=std::to_string(msg->status.type);
+    textMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    textMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    textMsg.fg_color = color;
+    textMsg.bg_color = color_bg;
+    textMsg.width = 100;
+    textMsg.height = 100;
+    textMsg.text_size = 1000;
+    rtkStatus->publish(textMsg);
 }
 
 void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg) {
