@@ -14,6 +14,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/OverlayText.msg"
         "msg/PieChart.msg"
         "msg/Plotter2D.msg"
+        "msg/NavSatFix.msg"
+        "msg/NavSatStatus.msg"
         DEPENDENCIES
         std_msgs
         )
