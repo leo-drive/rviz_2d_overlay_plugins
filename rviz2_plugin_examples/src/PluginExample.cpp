@@ -9,6 +9,10 @@ PluginExample::PluginExample() : Node("plugin_example") {
     mErrorPub1 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_1", 10);
     mErrorPub2 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_2", 10);
     mErrorPub3 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_3", 10);
+    mErrorPubAvarage = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("avarage_position_error", 10);
+
+    rtkStatus = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("rtk_status", 10);
+
     mNdtTime = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_time", 10);
 
     ndt_sub = create_subscription<tier4_debug_msgs::msg::Float32Stamped>(
@@ -17,6 +21,9 @@ PluginExample::PluginExample() : Node("plugin_example") {
     gnss_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
             "/sensing/gnss/clap/ros/gps_nav_sat_fix", 100,
             std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
+    rtk_sub = create_subscription<rbf_clap_b7_msgs::msg::InsData>(
+            "/sensing/gnss/clap/clap_msgs/clap_ins", 100,
+            std::bind(&PluginExample::rtk_callback, this, std::placeholders::_1));
 }
 
 void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg) {
@@ -47,7 +54,7 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
     plotterMsg.data = static_cast<float>(msg->data);
     plotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
     plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg.caption = "NDT Process Time";
+    plotterMsg.caption = "NDT P. Time";
     plotterMsg.horizontal_distance = static_cast<int32_t>(32);
     plotterMsg.vertical_distance = static_cast<int32_t>(32);
     plotterMsg.width = 172;
@@ -61,7 +68,7 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
 
 void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg) {
 
-    double error_1 = msg->position_covariance[0];
+    double error_1 = std::sqrt(msg->position_covariance[0]);
     double min_error_1 = 1.0;
     double max_error_1 = 5.0;
     double error_1_temp =
@@ -98,7 +105,7 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
     plotterMsg_1.unit = "m";
     mErrorPub1->publish(plotterMsg_1);
 
-    double error_2 = msg->position_covariance[4];
+    double error_2 = std::sqrt(msg->position_covariance[4]);
     double min_error_2 = 1.0;
     double max_error_2 = 5.0;
     double error_2_temp =
@@ -135,7 +142,7 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
     plotterMsg_2.unit = "m";
     mErrorPub2->publish(plotterMsg_2);
 
-    double error_3 = msg->position_covariance[8];
+    double error_3 = std::sqrt(msg->position_covariance[8]);
     double min_error_3 = 1.0;
     double max_error_3 = 5.0;
     double error_3_temp =
@@ -157,6 +164,7 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
         color_3.b = 0.0f;
         color_3.a = 1.0f;
     }
+
     rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_3;
     plotterMsg_3.data = static_cast<float>(error_3);
     plotterMsg_3.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
@@ -171,6 +179,83 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
     plotterMsg_3.fg_color = color_3;
     plotterMsg_3.unit = "m";
     mErrorPub3->publish(plotterMsg_3);
+
+        double avarage_position_error = (error_1 + error_2 + error_3 )/ 3;
+    double min_error_avarage = 1.0;
+    double max_error_avarage = 5.0;
+    double avarage_position_error_temp =
+            (((avarage_position_error - min_error_avarage) / (max_error_avarage - min_error_avarage)) * (1.0 - 0.0)) + 0.0;
+    std_msgs::msg::ColorRGBA color_avarage;
+    if (avarage_position_error < min_error_avarage) {
+        color_avarage.r = 0.0f;
+        color_avarage.g = 1.0f;
+        color_avarage.b = 0.0f;
+        color_avarage.a = 1.0f;
+    } else if (min_error_avarage < avarage_position_error && avarage_position_error < max_error_avarage) {
+        color_avarage.r = static_cast<float>(avarage_position_error_temp);
+        color_avarage.g = 1.0f - static_cast<float>(avarage_position_error_temp);
+        color_avarage.b = 0.0f;
+        color_avarage.a = 1.0f;
+    } else {
+        color_avarage.r = 1.0f;
+        color_avarage.g = 0.0f;
+        color_avarage.b = 0.0f;
+        color_avarage.a = 1.0f;
+    }
+    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_avarage;
+    plotterMsg_avarage.data = static_cast<float>(avarage_position_error);
+    plotterMsg_avarage.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    plotterMsg_avarage.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    plotterMsg_avarage.caption = "GNSS Error";
+    plotterMsg_avarage.horizontal_distance = static_cast<int32_t>(32);
+    plotterMsg_avarage.vertical_distance = static_cast<int32_t>(200);
+    plotterMsg_avarage.width = 172;
+    plotterMsg_avarage.height = 128;
+    plotterMsg_avarage.min_value = 0.0;
+    plotterMsg_avarage.max_value = 100.0;
+    plotterMsg_avarage.fg_color = color_3;
+    plotterMsg_avarage.unit = "m";
+    mErrorPubAvarage->publish(plotterMsg_avarage);
+
+}
+
+void PluginExample::rtk_callback(const rbf_clap_b7_msgs::msg::InsData::SharedPtr msg) {
+    std_msgs::msg::ColorRGBA color;
+    std_msgs::msg::ColorRGBA color_bg;
+    color_bg.r = 1.0f;
+    color_bg.g = 1.0f;
+    color_bg.b = 1.0f;
+    color_bg.a = 1.0f;
+
+    rviz_2d_overlay_msgs::msg::OverlayText textMsg;
+    textMsg.action = 0;
+    if(msg->pos_type ==0 ){
+        textMsg.text = "GPS POSITION TYPE: \n NO_SOLUTION";
+    }
+    else if(msg->pos_type == 52){
+        textMsg.text = "GPS POSITION TYPE: \n UNKNOWN_TYPE";
+    }
+    else if(msg->pos_type == 53){
+        textMsg.text = "GPS POSITION TYPE: \n SINGLE";
+    }
+    else if(msg->pos_type == 54){
+        textMsg.text = "GPS POSITION TYPE: \n DIFF";
+    }
+    else if(msg->pos_type == 55){
+        textMsg.text = "GPS POSITION TYPE: \n RTK FLOAT";
+    }
+    else if(msg->pos_type == 56){
+        textMsg.text = "GPS POSITION TYPE: \n RTK INT (FIXED)";
+    }
+//    textMsg.text=std::to_string(msg->status.type);
+    textMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
+    textMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    textMsg.fg_color = color;
+    textMsg.bg_color = color_bg;
+    textMsg.width = 100;
+    textMsg.height = 100;
+    textMsg.text_size = 1000;
+    rtkStatus->publish(textMsg);
 }
 
 int main(int argc, char **argv) {

@@ -18,7 +18,9 @@
 #include "pie_chart_display.h"
 
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
-#include <applanix_msgs/msg/navigation_performance_gsof50.hpp>
+#include <rbf_clap_b7_msgs/msg/ins_data.hpp>
+
+#include "math.h"
 
 class PluginExample : public rclcpp::Node {
 
@@ -29,14 +31,18 @@ private:
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub1;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub2;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub3;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPubAvarage;
 
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mNdtTime;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::OverlayText>::SharedPtr rtkStatus;
 
     rclcpp::Subscription<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr ndt_sub;
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gnss_sub;
+    rclcpp::Subscription<rbf_clap_b7_msgs::msg::InsData>::SharedPtr rtk_sub;
 
     void ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg);
     void gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
+    void rtk_callback(const rbf_clap_b7_msgs::msg::InsData::SharedPtr msg);
 };
 
 
