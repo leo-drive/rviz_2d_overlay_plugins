@@ -10,12 +10,27 @@ PluginExample::PluginExample() : Node("plugin_example") {
     mGnssErrorPub = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_error_pub", 10);
     mRtkStatusPub = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("rtk_status_pub", 10);
 
+    this->declare_parameter("ndt_time_topic", "");
+    this->declare_parameter("nav_sat_fix_topic", "");
+    this->declare_parameter("gpgga_topic", "");
+
+    std::string ndt_time_topic;
+    std::string nav_sat_fix_topic;
+    std::string gpgga_topic;
+
+    this->get_parameter("ndt_time_topic", ndt_time_topic);
+    this->get_parameter("nav_sat_fix_topic", nav_sat_fix_topic);
+    this->get_parameter("gpgga_topic", gpgga_topic);
+
     mNdtTimeSub = create_subscription<tier4_debug_msgs::msg::Float32Stamped>(
-            "/localization/pose_estimator/exe_time_ms", 100,
+            ndt_time_topic.c_str(), 100,
             std::bind(&PluginExample::ndt_callback, this, std::placeholders::_1));
-    mGnssSub = create_subscription<rviz_2d_overlay_msgs::msg::NavSatFix>(
-            "/sensing/gnss/clap/ros/gps_nav_sat_fix", 100,
+    mGnssSub = create_subscription<sensor_msgs::msg::NavSatFix>(
+            nav_sat_fix_topic.c_str(), 100,
             std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
+    mGpggaSub = create_subscription<nmea_msgs::msg::Gpgga>(
+            gpgga_topic.c_str(), 100,
+            std::bind(&PluginExample::gpgga_callback, this, std::placeholders::_1));
 }
 
 void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg) {
@@ -58,7 +73,7 @@ void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::Sh
     mNdtTimePub->publish(plotterMsg);
 }
 
-void PluginExample::gnss_callback(const rviz_2d_overlay_msgs::msg::NavSatFix &msg) {
+void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix &msg) {
 
     double average_position_error = (std::sqrt(msg.position_covariance[0]) + std::sqrt(msg.position_covariance[4]) +
                                      std::sqrt(msg.position_covariance[8])) / 3;
@@ -98,7 +113,9 @@ void PluginExample::gnss_callback(const rviz_2d_overlay_msgs::msg::NavSatFix &ms
     plotterMsg_average.fg_color = color;
     plotterMsg_average.unit = "m";
     mGnssErrorPub->publish(plotterMsg_average);
+}
 
+void PluginExample::gpgga_callback(const nmea_msgs::msg::Gpgga &msg){
     // RTK STATUS
     std_msgs::msg::ColorRGBA color_status;
     std_msgs::msg::ColorRGBA color_bg;
@@ -108,42 +125,42 @@ void PluginExample::gnss_callback(const rviz_2d_overlay_msgs::msg::NavSatFix &ms
     color_bg.a = 1.0f;
     rviz_2d_overlay_msgs::msg::OverlayText textMsg;
     textMsg.action = 0;
-    if(msg.status.gps_position_type ==0 ){
+    if(msg.gps_qual ==0 ){
         textMsg.text = "GPS POSITION TYPE: \n NO_SOLUTION";
     }
-    else if(msg.status.gps_position_type == 1){
+    else if(msg.gps_qual == 1){
         textMsg.text = "GPS POSITION TYPE: \n UNKNOWN_TYPE";
     }
-    else if(msg.status.gps_position_type == 2){
+    else if(msg.gps_qual == 2){
         textMsg.text = "GPS POSITION TYPE: \n SINGLE";
     }
-    else if(msg.status.gps_position_type == 3){
+    else if(msg.gps_qual == 3){
         textMsg.text = "GPS POSITION TYPE: \n PSRDIFF";
     }
-    else if(msg.status.gps_position_type == 4){
+    else if(msg.gps_qual == 4){
         textMsg.text = "GPS POSITION TYPE: \n SBAS";
     }
-    else if(msg.status.gps_position_type == 5){
+    else if(msg.gps_qual == 5){
         textMsg.text = "GPS POSITION TYPE: \n OMNISTAR";
     }
-    else if(msg.status.gps_position_type == 6){
+    else if(msg.gps_qual == 6){
         textMsg.text = "GPS POSITION TYPE: \n RTK_FLOAT";
     }
-    else if(msg.status.gps_position_type == 7){
+    else if(msg.gps_qual == 7){
         textMsg.text = "GPS POSITION TYPE: \n RTK_INT";
     }
-    else if(msg.status.gps_position_type == 8){
+    else if(msg.gps_qual == 8){
         textMsg.text = "GPS POSITION TYPE: \n PPP_FLOAT";
     }
-    else if(msg.status.gps_position_type == 9){
+    else if(msg.gps_qual == 9){
         textMsg.text = "GPS POSITION TYPE: \n PPP_INT";
     }
-    else if(msg.status.gps_position_type == 10){
+    else if(msg.gps_qual == 10){
         textMsg.text = "GPS POSITION TYPE: \n FIXED";
     }
     textMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
     textMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    textMsg.fg_color = color;
+    textMsg.fg_color = color_status;
     textMsg.bg_color = color_bg;
     textMsg.width = 100;
     textMsg.height = 100;

@@ -1,0 +1,13 @@
+<launch>
+    <arg name="ndt_time_topic" default="/localization/pose_estimator/exe_time_ms"/>
+    <arg name="nav_sat_fix_topic" default="/sensing/gnss/clap/ros/gps_nav_sat_fix"/>
+    <arg name="gpgga_topic" default="/sensing/gnss/clap/ros/gpgga"/>
+
+    <group>
+        <node pkg="rviz2_plugin_examples" exec="plugin_example" name="plugin_example" output="screen">
+            <param name="ndt_time_topic" value="$(var ndt_time_topic)"/>
+            <param name="nav_sat_fix_topic" value="$(var nav_sat_fix_topic)"/>
+            <param name="gpgga_topic" value="$(var gpgga_topic)"/>
+        </node>
+    </group>
+</launch>

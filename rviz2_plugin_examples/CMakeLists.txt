@@ -21,6 +21,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(nmea_msgs REQUIRED)
 find_package(rviz_2d_overlay_msgs REQUIRED)
 find_package(rviz_2d_overlay_plugins REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -45,6 +46,7 @@ ament_target_dependencies(plugin_example
         rviz_2d_overlay_msgs
         rviz_2d_overlay_plugins
         sensor_msgs
+        nmea_msgs
         tier4_debug_msgs
         applanix_msgs
         )
