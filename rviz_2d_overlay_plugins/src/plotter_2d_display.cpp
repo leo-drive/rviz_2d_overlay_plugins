@@ -11,7 +11,6 @@
 
 namespace rviz_2d_overlay_plugins {
     Plotter2DDisplay::Plotter2DDisplay() : min_value_(0.0), max_value_(0.0) {
-
         show_value_property_ = new rviz_common::properties::BoolProperty("Show Value", true,
                                                                          "Show the current value as text.",
                                                                          this, SLOT(updateShowValue()));
@@ -93,9 +92,15 @@ namespace rviz_2d_overlay_plugins {
         max_color_property_ = new rviz_common::properties::ColorProperty("Max Color", QColor(255, 0, 0),
                                                                          "Color of the plotter when the value is at its maximum.",
                                                                          this, SLOT(updateMaxColor()));
-    caption_property_ = new rviz_common::properties::StringProperty("Caption", "",
-                                                                    "Caption of the plotter.",
-                                                                    this, SLOT(updateCaption()));
+
+        left_property_ = new rviz_common::properties::IntProperty("left", 128,
+                                               "left of the plotter window",
+                                               this, SLOT(updateLeft()));
+        left_property_->setMin(0);
+        top_property_ = new rviz_common::properties::IntProperty("top", 128,
+                                              "top of the plotter window",
+                                              this, SLOT(updateTop()));
+        top_property_->setMin(0);
     }
 
     Plotter2DDisplay::~Plotter2DDisplay() {
@@ -126,10 +131,10 @@ namespace rviz_2d_overlay_plugins {
         updateShowValue();
         updateWidth();
         updateHeight();
-        updateHorizontalDistance();
-        updateVerticalDistance();
-        updateHorizontalAlignment();
-        updateVerticalAlignment();
+//        updateHorizontalDistance();
+//        updateVerticalDistance();
+//        updateHorizontalAlignment();
+//        updateVerticalAlignment();
         updateFGColor();
         updateBGColor();
         updateFGAlpha();
@@ -144,7 +149,6 @@ namespace rviz_2d_overlay_plugins {
         updateAutoScale();
         updateMinValue();
         updateMaxValue();
-        updateCaption();
         overlay_->updateTextureSize(width_property_->getInt(),
                                     height_property_->getInt() + caption_offset_);
         draw_required_ = true;
@@ -304,7 +308,7 @@ namespace rviz_2d_overlay_plugins {
             if (wall_dt + last_time_ > update_interval_) {
                 overlay_->updateTextureSize(texture_width_,
                                             texture_height_ + caption_offset_);
-                overlay_->setPosition(vertical_dist_, horizontal_dist_, horizontal_alignment_, vertical_alignment_);
+                overlay_->setPosition(left_, top_, horizontal_alignment_, vertical_alignment_);
                 overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
                 last_time_ = 0;
                 drawPlot();
@@ -335,87 +339,73 @@ namespace rviz_2d_overlay_plugins {
     {
         boost::mutex::scoped_lock lock(mutex_);
         texture_width_ = width_property_->getInt();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateHeight()
     {
         boost::mutex::scoped_lock lock(mutex_);
         texture_height_ = height_property_->getInt();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateVerticalDistance() {
         boost::mutex::scoped_lock lock(mutex_);
         vertical_dist_ = ver_dist_property_->getInt();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateHorizontalDistance() {
         boost::mutex::scoped_lock lock(mutex_);
         horizontal_dist_ = hor_dist_property_->getInt();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateVerticalAlignment() {
         boost::mutex::scoped_lock lock(mutex_);
         vertical_alignment_ = VerticalAlignment{static_cast<uint8_t>(ver_alignment_property_->getOptionInt())};
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateHorizontalAlignment() {
         boost::mutex::scoped_lock lock(mutex_);
         horizontal_alignment_ = HorizontalAlignment{static_cast<uint8_t>(hor_alignment_property_->getOptionInt())};
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateBGColor()
     {
         bg_color_ = bg_color_property_->getColor();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateFGColor()
     {
         fg_color_ = fg_color_property_->getColor();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateFGAlpha()
     {
         fg_alpha_ = fg_alpha_property_->getFloat() * 255.0;
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateBGAlpha()
     {
         bg_alpha_ = bg_alpha_property_->getFloat() * 255.0;
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateShowValue()
     {
         show_value_ = show_value_property_->getBool();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateShowBorder()
     {
         show_border_ = show_border_property_->getBool();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateLineWidth()
     {
         line_width_ = line_width_property_->getInt();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateBufferSize()
     {
         buffer_length_ = buffer_length_property_->getInt();
         initializeBuffer();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateAutoColorChange()
@@ -427,19 +417,16 @@ namespace rviz_2d_overlay_plugins {
         else {
             max_color_property_->hide();
         }
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateMaxColor()
     {
         max_color_ = max_color_property_->getColor();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateUpdateInterval()
     {
         update_interval_ = update_interval_property_->getFloat();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateTextSize()
@@ -448,7 +435,6 @@ namespace rviz_2d_overlay_plugins {
         QFont font;
         font.setPointSize(text_size_);
         caption_offset_ = QFontMetrics(font).height();
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateShowCaption()
@@ -460,7 +446,6 @@ namespace rviz_2d_overlay_plugins {
         else {
             text_size_property_->hide();
         }
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateMinValue()
@@ -468,7 +453,6 @@ namespace rviz_2d_overlay_plugins {
         if (!auto_scale_) {
             min_value_ = min_value_property_->getFloat();
         }
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateMaxValue()
@@ -476,7 +460,6 @@ namespace rviz_2d_overlay_plugins {
         if (!auto_scale_) {
             max_value_ = max_value_property_->getFloat();
         }
-        draw_required_ = true;
     }
 
     void Plotter2DDisplay::updateAutoScale()
@@ -492,13 +475,16 @@ namespace rviz_2d_overlay_plugins {
         }
         updateMinValue();
         updateMaxValue();
-        draw_required_ = true;
     }
 
-    void Plotter2DDisplay::updateCaption()
+    void Plotter2DDisplay::updateTop()
     {
-        caption_ = caption_property_->getString();
-        draw_required_ = true;
+        top_ = top_property_->getInt();
+    }
+
+    void Plotter2DDisplay::updateLeft()
+    {
+        left_ = left_property_->getInt();
     }
 
 //    bool Plotter2DDisplay::isInRegion(int x, int y)

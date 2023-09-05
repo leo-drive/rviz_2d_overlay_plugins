@@ -105,7 +105,9 @@ namespace rviz_2d_overlay_plugins {
         rviz_common::properties::BoolProperty *auto_scale_property_;
         rviz_common::properties::FloatProperty *max_value_property_;
         rviz_common::properties::FloatProperty *min_value_property_;
-        rviz_common::properties::StringProperty *caption_property_;
+
+        rviz_common::properties::IntProperty* left_property_;
+        rviz_common::properties::IntProperty* top_property_;
 
         // ROS VARIABLES
         boost::mutex mutex_;
@@ -119,6 +121,8 @@ namespace rviz_2d_overlay_plugins {
         void updateBGAlpha();
         void updateWidth();
         void updateHeight();
+        void updateTop();
+        void updateLeft();
         void updateHorizontalDistance();
         void updateVerticalDistance();
         void updateHorizontalAlignment();
@@ -133,7 +137,6 @@ namespace rviz_2d_overlay_plugins {
         void updateAutoScale();
         void updateMinValue();
         void updateMaxValue();
-        void updateCaption();
     private:
         void processMessage(rviz_2d_overlay_msgs::msg::Plotter2D::ConstSharedPtr msg) override;
     };
