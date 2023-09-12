@@ -219,7 +219,7 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
 
 }
 
-void PluginExample::rtk_callback(const rbf_clap_b7_msgs::msg::InsData::SharedPtr msg) {
+void PluginExample::rtk_callback(const clap_b7_driver::msg::ClapIns::SharedPtr msg) {
     std_msgs::msg::ColorRGBA color;
     std_msgs::msg::ColorRGBA color_bg;
     color_bg.r = 1.0f;
