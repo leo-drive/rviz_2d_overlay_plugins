@@ -21,8 +21,8 @@ PluginExample::PluginExample() : Node("plugin_example") {
     gnss_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
             "/sensing/gnss/clap/ros/gps_nav_sat_fix", 100,
             std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
-    rtk_sub = create_subscription<rbf_clap_b7_msgs::msg::InsData>(
-            "/sensing/gnss/clap/clap_msgs/clap_ins", 100,
+    rtk_sub = create_subscription<clap_b7_driver::msg::ClapIns>(
+            "/sensing/gnss/clap/clap_ins", 100,
             std::bind(&PluginExample::rtk_callback, this, std::placeholders::_1));
 }
 

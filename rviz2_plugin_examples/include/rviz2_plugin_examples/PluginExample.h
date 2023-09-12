@@ -18,7 +18,8 @@
 #include "pie_chart_display.h"
 
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
-#include <rbf_clap_b7_msgs/msg/ins_data.hpp>
+#include <clap_b7_driver/msg/clap_ins.hpp>
+
 
 #include "math.h"
 
@@ -38,11 +39,11 @@ private:
 
     rclcpp::Subscription<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr ndt_sub;
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gnss_sub;
-    rclcpp::Subscription<rbf_clap_b7_msgs::msg::InsData>::SharedPtr rtk_sub;
+    rclcpp::Subscription<clap_b7_driver::msg::ClapIns>::SharedPtr rtk_sub;
 
     void ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg);
     void gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
-    void rtk_callback(const rbf_clap_b7_msgs::msg::InsData::SharedPtr msg);
+    void rtk_callback(const clap_b7_driver::msg::ClapIns::SharedPtr msg);
 };
 
 
