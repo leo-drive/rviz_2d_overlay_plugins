@@ -14,7 +14,7 @@
   <depend>std_msgs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_debug_msgs</depend>
-  <depend>rbf_clap_b7_msgs</depend>
+  <depend>clap_b7_driver</depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>rviz_2d_overlay_msgs</exec_depend>

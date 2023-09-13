@@ -26,7 +26,7 @@ find_package(rviz_2d_overlay_plugins REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(tier4_debug_msgs REQUIRED)
-find_package(rbf_clap_b7_msgs REQUIRED)
+find_package(clap_b7_driver REQUIRED)
 
 include_directories(
         include
@@ -46,7 +46,7 @@ ament_target_dependencies(plugin_example
         rviz_2d_overlay_plugins
         sensor_msgs
         tier4_debug_msgs
-        rbf_clap_b7_msgs
+        clap_b7_driver
         )
 
 

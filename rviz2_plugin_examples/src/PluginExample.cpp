@@ -21,8 +21,8 @@ PluginExample::PluginExample() : Node("plugin_example") {
     gnss_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
             "/sensing/gnss/clap/ros/gps_nav_sat_fix", 100,
             std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
-    rtk_sub = create_subscription<rbf_clap_b7_msgs::msg::InsData>(
-            "/sensing/gnss/clap/clap_msgs/clap_ins", 100,
+    rtk_sub = create_subscription<clap_b7_driver::msg::ClapIns>(
+            "/sensing/gnss/clap/clap_ins", 100,
             std::bind(&PluginExample::rtk_callback, this, std::placeholders::_1));
 }
 
@@ -219,7 +219,7 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
 
 }
 
-void PluginExample::rtk_callback(const rbf_clap_b7_msgs::msg::InsData::SharedPtr msg) {
+void PluginExample::rtk_callback(const clap_b7_driver::msg::ClapIns::SharedPtr msg) {
     std_msgs::msg::ColorRGBA color;
     std_msgs::msg::ColorRGBA color_bg;
     color_bg.r = 1.0f;
