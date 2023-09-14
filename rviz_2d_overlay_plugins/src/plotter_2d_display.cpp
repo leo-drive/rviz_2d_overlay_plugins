@@ -282,6 +282,8 @@ namespace rviz_2d_overlay_plugins {
             return;
         }
 
+        horizontal_dist_ = msg->horizontal_distance;
+        vertical_dist_ = msg->vertical_distance;
         horizontal_alignment_ = HorizontalAlignment{msg->horizontal_alignment};
         vertical_alignment_ = VerticalAlignment{msg->vertical_alignment};
         left_ = msg->horizontal_distance;
@@ -304,8 +306,8 @@ namespace rviz_2d_overlay_plugins {
             if (wall_dt + last_time_ > update_interval_) {
                 overlay_->updateTextureSize(texture_width_,
                                             texture_height_ + caption_offset_);
-                overlay_->setPosition(vertical_dist_, horizontal_dist_, horizontal_alignment_, vertical_alignment_);
                 overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
+                overlay_->setPosition(horizontal_dist_, vertical_dist_, horizontal_alignment_, vertical_alignment_);
                 last_time_ = 0;
                 drawPlot();
                 draw_required_ = false;

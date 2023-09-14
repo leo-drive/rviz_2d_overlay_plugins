@@ -208,7 +208,7 @@ void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr m
     plotterMsg_avarage.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
     plotterMsg_avarage.caption = "GNSS Error";
     plotterMsg_avarage.horizontal_distance = static_cast<int32_t>(32);
-    plotterMsg_avarage.vertical_distance = static_cast<int32_t>(200);
+    plotterMsg_avarage.vertical_distance = static_cast<int32_t>(236);
     plotterMsg_avarage.width = 172;
     plotterMsg_avarage.height = 128;
     plotterMsg_avarage.min_value = 0.0;
