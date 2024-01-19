@@ -10,6 +10,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "rviz_common/ros_topic_display.hpp"
 
 #include <rviz_2d_overlay_msgs/msg/overlay_text.hpp>
@@ -18,7 +19,8 @@
 #include "pie_chart_display.h"
 
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
-#include "sbg_driver/msg/sbg_gps_pos.hpp"
+
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 class PluginExample : public rclcpp::Node {
 
@@ -34,13 +36,22 @@ private:
 
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mNdtTime;
 
-    rclcpp::Subscription<sbg_driver::msg::SbgGpsPos>::SharedPtr rtk_sub;
+
     rclcpp::Subscription<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr ndt_sub;
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gnss_sub;
 
-    void rtk_callback(const sbg_driver::msg::SbgGpsPos::SharedPtr msg);
     void ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg);
     void gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
+
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr gnss_pose_sub;
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ndt_pose_sub;
+
+    void gnss_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped ::SharedPtr msg);
+    void ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped ::SharedPtr msg);
+
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr gnss_pose_error_;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr ndt_pose_error_;
+
 };
 
 
