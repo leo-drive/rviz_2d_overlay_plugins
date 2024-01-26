@@ -33,6 +33,9 @@ PluginExample::PluginExample() : Node("plugin_example") {
 
     gnss_pose_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_position_error", 10);
     ndt_pose_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_position_error", 10);
+
+    gnss_orientation_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_orientation_error_in_degrees", 10);
+    ndt_orientation_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_orientation_error_in_degrees", 10);
 }
 void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
 
@@ -42,7 +45,6 @@ void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarian
     color.g = 0.5f;
     color.b = 0.5f;
     color.a = 1.0f;
-
 
     rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
     double rmse_ = std::sqrt((msg->pose.covariance[0] + msg->pose.covariance[7]) / 2);
@@ -60,6 +62,23 @@ void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarian
     plotterMsg.unit = "m";
     ndt_pose_error_->publish(plotterMsg);
 
+
+    rviz_2d_overlay_msgs::msg::Plotter2D orientationPlotterMsg;
+    double rmse_in_degrees = std::sqrt(msg->pose.covariance[35]) * 180 / M_PI;
+    orientationPlotterMsg.data = static_cast<float>(rmse_in_degrees);
+    orientationPlotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
+    orientationPlotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    orientationPlotterMsg.caption = "NDT YAW RMSE";
+    orientationPlotterMsg.horizontal_distance = static_cast<int32_t>(32);
+    orientationPlotterMsg.vertical_distance = static_cast<int32_t>(192);
+    orientationPlotterMsg.width = 172;
+    orientationPlotterMsg.height = 128;
+    orientationPlotterMsg.min_value = 0.0;
+    orientationPlotterMsg.max_value = 1.0;
+    orientationPlotterMsg.fg_color = color;
+    orientationPlotterMsg.unit = "degrees";
+    ndt_orientation_error_->publish(orientationPlotterMsg);
+
 }
 
 void PluginExample::gnss_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
@@ -69,7 +88,6 @@ void PluginExample::gnss_pose_callback(const geometry_msgs::msg::PoseWithCovaria
     color.g = 0.5f;
     color.b = 0.5f;
     color.a = 1.0f;
-
 
     rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
     double rmse_ = std::sqrt((msg->pose.covariance[0] + msg->pose.covariance[7]) / 2);
@@ -86,6 +104,23 @@ void PluginExample::gnss_pose_callback(const geometry_msgs::msg::PoseWithCovaria
     plotterMsg.fg_color = color;
     plotterMsg.unit = "m";
     gnss_pose_error_->publish(plotterMsg);
+
+
+    rviz_2d_overlay_msgs::msg::Plotter2D orientationPlotterMsg;
+    double rmse_in_degrees = std::sqrt(msg->pose.covariance[35]) * 180 / M_PI;
+    orientationPlotterMsg.data = static_cast<float>(rmse_in_degrees);
+    orientationPlotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
+    orientationPlotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    orientationPlotterMsg.caption = "GNSS YAW RMSE";
+    orientationPlotterMsg.horizontal_distance = static_cast<int32_t>(32);
+    orientationPlotterMsg.vertical_distance = static_cast<int32_t>(32);
+    orientationPlotterMsg.width = 172;
+    orientationPlotterMsg.height = 128;
+    orientationPlotterMsg.min_value = 0.0;
+    orientationPlotterMsg.max_value = 1.0;
+    orientationPlotterMsg.fg_color = color;
+    orientationPlotterMsg.unit = "degrees";
+    gnss_orientation_error_->publish(orientationPlotterMsg);
 
 }
 void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg) {

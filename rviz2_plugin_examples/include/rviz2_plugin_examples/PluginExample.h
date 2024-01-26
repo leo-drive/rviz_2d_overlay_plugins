@@ -52,6 +52,9 @@ private:
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr gnss_pose_error_;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr ndt_pose_error_;
 
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr gnss_orientation_error_;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr ndt_orientation_error_;
+
 };
 
 
