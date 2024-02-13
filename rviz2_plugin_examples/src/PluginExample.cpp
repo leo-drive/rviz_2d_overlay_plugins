@@ -8,27 +8,20 @@
 
 PluginExample::PluginExample() : Node("plugin_example") {
     rtkStatus = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("RTK_Status", 10);
-    mErrorPub1 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_1", 10);
-    mErrorPub2 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_2", 10);
-    mErrorPub3 = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("error_3", 10);
-    mErrorPubAvarage = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("avarage_position_error", 10);
-    mNdtTime = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_time", 10);
 
-    ndt_sub = create_subscription<tier4_debug_msgs::msg::Float32Stamped>(
-            "/localization/pose_estimator/exe_time_ms", 100,
-            std::bind(&PluginExample::ndt_callback, this, std::placeholders::_1));
-    gnss_sub = create_subscription<sensor_msgs::msg::NavSatFix>(
-            "/gps/fix", 100,
+    mErrorPubAvarage = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("avarage_position_error", 10);
+    mYawErrorPub = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("yaw_error_gnss",10);
+
+    gnss_real_pose_sub = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/sensing/gnss/pose_with_covariance", 100,
             std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
 
-
-
     ndt_pose_sub = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "/localization/pose_estimator/pose_with_covariance", 100,
+            "/localization/pose_estimator/pose_with_covariance_w_switch", 100,
             std::bind(&PluginExample::ndt_pose_callback, this, std::placeholders::_1));
 
     gnss_pose_sub = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "/sensing/gnss/pose_with_covariance", 100,
+            "/sensing/gnss/pose_with_covariance_w_switch", 100,
             std::bind(&PluginExample::gnss_pose_callback, this, std::placeholders::_1));
 
     gnss_pose_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_position_error", 10);
@@ -42,8 +35,8 @@ void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarian
     std_msgs::msg::ColorRGBA color;
 
     color.r = 0.0f;
-    color.g = 0.5f;
-    color.b = 0.5f;
+    color.g = 1.0f;
+    color.b = 0.2f;
     color.a = 1.0f;
 
     rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
@@ -51,10 +44,10 @@ void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarian
     plotterMsg.data = static_cast<float>(rmse_);
     plotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
     plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg.caption = "NDT RMSE";
+    plotterMsg.caption = "NDT POS RMSE (EKF)";
     plotterMsg.horizontal_distance = static_cast<int32_t>(32);
-    plotterMsg.vertical_distance = static_cast<int32_t>(192);
-    plotterMsg.width = 172;
+    plotterMsg.vertical_distance = static_cast<int32_t>(352);
+    plotterMsg.width = 200;
     plotterMsg.height = 128;
     plotterMsg.min_value = 0.0;
     plotterMsg.max_value = 1.0;
@@ -68,13 +61,13 @@ void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarian
     orientationPlotterMsg.data = static_cast<float>(rmse_in_degrees);
     orientationPlotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
     orientationPlotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    orientationPlotterMsg.caption = "NDT YAW RMSE";
+    orientationPlotterMsg.caption = "NDT Yaw RMSE (EKF)";
     orientationPlotterMsg.horizontal_distance = static_cast<int32_t>(32);
-    orientationPlotterMsg.vertical_distance = static_cast<int32_t>(192);
-    orientationPlotterMsg.width = 172;
+    orientationPlotterMsg.vertical_distance = static_cast<int32_t>(352);
+    orientationPlotterMsg.width = 200;
     orientationPlotterMsg.height = 128;
     orientationPlotterMsg.min_value = 0.0;
-    orientationPlotterMsg.max_value = 1.0;
+    orientationPlotterMsg.max_value = 5.0;
     orientationPlotterMsg.fg_color = color;
     orientationPlotterMsg.unit = "degrees";
     ndt_orientation_error_->publish(orientationPlotterMsg);
@@ -84,9 +77,9 @@ void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarian
 void PluginExample::gnss_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
     std_msgs::msg::ColorRGBA color;
 
-    color.r = 0.0f;
-    color.g = 0.5f;
-    color.b = 0.5f;
+    color.r = 1.0f;
+    color.g = 0.25f;
+    color.b = 0.0f;
     color.a = 1.0f;
 
     rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
@@ -94,10 +87,10 @@ void PluginExample::gnss_pose_callback(const geometry_msgs::msg::PoseWithCovaria
     plotterMsg.data = static_cast<float>(rmse_);
     plotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
     plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg.caption = "GNSS RMSE";
+    plotterMsg.caption = "GNSS POS RMSE (EKF)";
     plotterMsg.horizontal_distance = static_cast<int32_t>(32);
-    plotterMsg.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg.width = 172;
+    plotterMsg.vertical_distance = static_cast<int32_t>(192);
+    plotterMsg.width = 200;
     plotterMsg.height = 128;
     plotterMsg.min_value = 0.0;
     plotterMsg.max_value = 1.0;
@@ -111,209 +104,59 @@ void PluginExample::gnss_pose_callback(const geometry_msgs::msg::PoseWithCovaria
     orientationPlotterMsg.data = static_cast<float>(rmse_in_degrees);
     orientationPlotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
     orientationPlotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    orientationPlotterMsg.caption = "GNSS YAW RMSE";
+    orientationPlotterMsg.caption = "GNSS Yaw RMSE (EKF)";
     orientationPlotterMsg.horizontal_distance = static_cast<int32_t>(32);
-    orientationPlotterMsg.vertical_distance = static_cast<int32_t>(32);
-    orientationPlotterMsg.width = 172;
+    orientationPlotterMsg.vertical_distance = static_cast<int32_t>(192);
+    orientationPlotterMsg.width = 200;
     orientationPlotterMsg.height = 128;
     orientationPlotterMsg.min_value = 0.0;
-    orientationPlotterMsg.max_value = 1.0;
+    orientationPlotterMsg.max_value = 5.0;
     orientationPlotterMsg.fg_color = color;
     orientationPlotterMsg.unit = "degrees";
     gnss_orientation_error_->publish(orientationPlotterMsg);
 
 }
-void PluginExample::ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg) {
+void PluginExample::gnss_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
 
-    double time_err_color_min = 20.0;
-    double time_err_color_max = 70.0;
-    double time_err_temp =
-            (((msg->data - time_err_color_min) / (time_err_color_max - time_err_color_min)) * (1.0 - 0.0)) + 0.0;
-    std_msgs::msg::ColorRGBA color;
-    if (msg->data < 20.0) {
-        color.r = 0.0f;
-        color.g = 1.0f;
-        color.b = 0.0f;
-        color.a = 1.0f;
-    } else if (20.0 < msg->data && msg->data < 100.0) {
-        color.r = static_cast<float>(time_err_temp);
-        color.g = 1.0f - static_cast<float>(time_err_temp);
-        color.b = 0.0f;
-        color.a = 1.0f;
-    } else {
-        color.r = 1.0f;
-        color.g = 0.0f;
-        color.b = 0.0f;
-        color.a = 1.0f;
-    }
+    double avarage_position_error = (std::sqrt(msg->pose.covariance[0]) + std::sqrt(msg->pose.covariance[7]) ) / 2;
+    std_msgs::msg::ColorRGBA color_real_gnss_;
+    color_real_gnss_.r = 0.5f;
+    color_real_gnss_.g = 0.5f;
+    color_real_gnss_.b = 0.5f;
+    color_real_gnss_.a = 1.0f;
 
-    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg;
-    plotterMsg.data = static_cast<float>(msg->data);
-    plotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    plotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg.caption = "NDT P. Time";
-    plotterMsg.horizontal_distance = static_cast<int32_t>(32);
-    plotterMsg.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg.width = 172;
-    plotterMsg.height = 128;
-    plotterMsg.min_value = 0.0;
-    plotterMsg.max_value = 100.0;
-    plotterMsg.fg_color = color;
-    plotterMsg.unit = "ms";
-    mNdtTime->publish(plotterMsg);
-}
-
-void PluginExample::gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg) {
-
-    double error_1 = std::sqrt(msg->position_covariance[0]);
-    double min_error_1 = 1.0;
-    double max_error_1 = 5.0;
-    double error_1_temp =
-            (((error_1 - min_error_1) / (max_error_1 - min_error_1)) * (1.0 - 0.0)) + 0.0;
-    std_msgs::msg::ColorRGBA color;
-    if (error_1 < min_error_1) {
-        color.r = 0.0f;
-        color.g = 1.0f;
-        color.b = 0.0f;
-        color.a = 1.0f;
-    } else if (min_error_1 < error_1 && error_1 < max_error_1) {
-        color.r = static_cast<float>(error_1_temp);
-        color.g = 1.0f - static_cast<float>(error_1_temp);
-        color.b = 0.0f;
-        color.a = 1.0f;
-    } else {
-        color.r = 1.0f;
-        color.g = 0.0f;
-        color.b = 0.0f;
-        color.a = 1.0f;
-    }
-    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_1;
-    plotterMsg_1.data = static_cast<float>(error_1);
-    plotterMsg_1.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    plotterMsg_1.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg_1.caption = "GNSS Error 1";
-    plotterMsg_1.horizontal_distance = static_cast<int32_t>(236);
-    plotterMsg_1.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg_1.width = 172;
-    plotterMsg_1.height = 128;
-    plotterMsg_1.min_value = 0.0;
-    plotterMsg_1.max_value = 100.0;
-    plotterMsg_1.fg_color = color;
-    plotterMsg_1.unit = "m";
-    mErrorPub1->publish(plotterMsg_1);
-
-    double error_2 = std::sqrt(msg->position_covariance[4]);
-    double min_error_2 = 1.0;
-    double max_error_2 = 5.0;
-    double error_2_temp =
-            (((error_2 - min_error_2) / (max_error_2 - min_error_2)) * (1.0 - 0.0)) + 0.0;
-    std_msgs::msg::ColorRGBA color_2;
-    if (error_2 < min_error_2) {
-        color_2.r = 0.0f;
-        color_2.g = 1.0f;
-        color_2.b = 0.0f;
-        color_2.a = 1.0f;
-    } else if (min_error_2 < error_2 && error_2 < max_error_2) {
-        color_2.r = static_cast<float>(error_2_temp);
-        color_2.g = 1.0f - static_cast<float>(error_2_temp);
-        color_2.b = 0.0f;
-        color_2.a = 1.0f;
-    } else {
-        color_2.r = 1.0f;
-        color_2.g = 0.0f;
-        color_2.b = 0.0f;
-        color_2.a = 1.0f;
-    }
-    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_2;
-    plotterMsg_2.data = static_cast<float>(error_2);
-    plotterMsg_2.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    plotterMsg_2.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg_2.caption = "GNSS Error 2";
-    plotterMsg_2.horizontal_distance = static_cast<int32_t>(440);
-    plotterMsg_2.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg_2.width = 172;
-    plotterMsg_2.height = 128;
-    plotterMsg_2.min_value = 0.0;
-    plotterMsg_2.max_value = 100.0;
-    plotterMsg_2.fg_color = color_2;
-    plotterMsg_2.unit = "m";
-    mErrorPub2->publish(plotterMsg_2);
-
-    double error_3 = std::sqrt(msg->position_covariance[8]);
-    double min_error_3 = 1.0;
-    double max_error_3 = 5.0;
-    double error_3_temp =
-            (((error_3 - min_error_3) / (max_error_3 - min_error_3)) * (1.0 - 0.0)) + 0.0;
-    std_msgs::msg::ColorRGBA color_3;
-    if (error_3 < min_error_3) {
-        color_3.r = 0.0f;
-        color_3.g = 1.0f;
-        color_3.b = 0.0f;
-        color_3.a = 1.0f;
-    } else if (min_error_3 < error_3 && error_3 < max_error_3) {
-        color_3.r = static_cast<float>(error_3_temp);
-        color_3.g = 1.0f - static_cast<float>(error_3_temp);
-        color_3.b = 0.0f;
-        color_3.a = 1.0f;
-    } else {
-        color_3.r = 1.0f;
-        color_3.g = 0.0f;
-        color_3.b = 0.0f;
-        color_3.a = 1.0f;
-    }
-    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_3;
-    plotterMsg_3.data = static_cast<float>(error_3);
-    plotterMsg_3.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    plotterMsg_3.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg_3.caption = "GNSS Error 3";
-    plotterMsg_3.horizontal_distance = static_cast<int32_t>(644);
-    plotterMsg_3.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg_3.width = 172;
-    plotterMsg_3.height = 128;
-    plotterMsg_3.min_value = 0.0;
-    plotterMsg_3.max_value = 100.0;
-    plotterMsg_3.fg_color = color_3;
-    plotterMsg_3.unit = "m";
-    mErrorPub3->publish(plotterMsg_3);
-
-
-
-    double avarage_position_error = (error_1 + error_2 + error_3 )/ 3;
-    double min_error_avarage = 1.0;
-    double max_error_avarage = 5.0;
-    double avarage_position_error_temp =
-            (((avarage_position_error - min_error_avarage) / (max_error_avarage - min_error_avarage)) * (1.0 - 0.0)) + 0.0;
-    std_msgs::msg::ColorRGBA color_avarage;
-    if (avarage_position_error < min_error_avarage) {
-        color_avarage.r = 0.0f;
-        color_avarage.g = 1.0f;
-        color_avarage.b = 0.0f;
-        color_avarage.a = 1.0f;
-    } else if (min_error_avarage < avarage_position_error && avarage_position_error < max_error_avarage) {
-        color_avarage.r = static_cast<float>(avarage_position_error_temp);
-        color_avarage.g = 1.0f - static_cast<float>(avarage_position_error_temp);
-        color_avarage.b = 0.0f;
-        color_avarage.a = 1.0f;
-    } else {
-        color_avarage.r = 1.0f;
-        color_avarage.g = 0.0f;
-        color_avarage.b = 0.0f;
-        color_avarage.a = 1.0f;
-    }
     rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_avarage;
     plotterMsg_avarage.data = static_cast<float>(avarage_position_error);
     plotterMsg_avarage.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
     plotterMsg_avarage.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg_avarage.caption = "GNSS Error";
+    plotterMsg_avarage.caption = "GNSS POS RMSE";
     plotterMsg_avarage.horizontal_distance = static_cast<int32_t>(32);
-    plotterMsg_avarage.vertical_distance = static_cast<int32_t>(200);
-    plotterMsg_avarage.width = 172;
+    plotterMsg_avarage.vertical_distance = static_cast<int32_t>(32);
+    plotterMsg_avarage.width = 200;
     plotterMsg_avarage.height = 128;
     plotterMsg_avarage.min_value = 0.0;
-    plotterMsg_avarage.max_value = 100.0;
-    plotterMsg_avarage.fg_color = color_3;
+    plotterMsg_avarage.max_value = 1.0;
+    plotterMsg_avarage.fg_color = color_real_gnss_;
     plotterMsg_avarage.unit = "m";
     mErrorPubAvarage->publish(plotterMsg_avarage);
+
+
+    double yaw_error = std::sqrt(msg->pose.covariance[35]) * 180 / M_PI;
+
+    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_yaw;
+    plotterMsg_yaw.data = static_cast<float>(yaw_error);
+    plotterMsg_yaw.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
+    plotterMsg_yaw.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
+    plotterMsg_yaw.caption = "GNSS Yaw RMSE";
+    plotterMsg_yaw.horizontal_distance = static_cast<int32_t>(32);
+    plotterMsg_yaw.vertical_distance = static_cast<int32_t>(32);
+    plotterMsg_yaw.width = 200;
+    plotterMsg_yaw.height = 128;
+    plotterMsg_yaw.min_value = 0.0;
+    plotterMsg_yaw.max_value = 5.0;
+    plotterMsg_yaw.fg_color = color_real_gnss_;
+    plotterMsg_yaw.unit = "degrees";
+    mYawErrorPub->publish(plotterMsg_yaw);
 }
 
 int main(int argc, char **argv) {

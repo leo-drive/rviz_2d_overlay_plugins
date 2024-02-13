@@ -29,19 +29,15 @@ public:
 
 private:
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::OverlayText>::SharedPtr rtkStatus;
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub1;
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub2;
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPub3;
     rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mErrorPubAvarage;
+    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mYawErrorPub;
 
-    rclcpp::Publisher<rviz_2d_overlay_msgs::msg::Plotter2D>::SharedPtr mNdtTime;
 
 
-    rclcpp::Subscription<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr ndt_sub;
-    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gnss_sub;
 
-    void ndt_callback(const tier4_debug_msgs::msg::Float32Stamped::SharedPtr msg);
-    void gnss_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr gnss_real_pose_sub;
+
+    void gnss_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr gnss_pose_sub;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ndt_pose_sub;
