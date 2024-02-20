@@ -17,11 +17,11 @@ PluginExample::PluginExample() : Node("plugin_example") {
             std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
 
     ndt_pose_sub = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "/localization/pose_estimator/pose_with_covariance_w_switch", 100,
+            "/ndt/debug/pose_with_cov_stamped", 100,
             std::bind(&PluginExample::ndt_pose_callback, this, std::placeholders::_1));
 
     gnss_pose_sub = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "/sensing/gnss/pose_with_covariance_w_switch", 100,
+            "/aw_pose_covariance_modifier/debug/pose_with_cov_stamped", 100,
             std::bind(&PluginExample::gnss_pose_callback, this, std::placeholders::_1));
 
     gnss_pose_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_position_error", 10);
