@@ -15,7 +15,7 @@ namespace rviz_2d_overlay_plugins {
         show_value_property_ = new rviz_common::properties::BoolProperty("Show Value", true,
                                                                          "Show the current value as text.",
                                                                          this, SLOT(updateShowValue()));
-        buffer_length_property_ = new rviz_common::properties::IntProperty("Buffer Length", 10000000000,
+        buffer_length_property_ = new rviz_common::properties::IntProperty("Buffer Length", 100,
                                                                            "Length of the buffer used to store the values.",
                                                                            this, SLOT(updateBufferSize()));
         width_property_ = new rviz_common::properties::IntProperty("Width", 64,

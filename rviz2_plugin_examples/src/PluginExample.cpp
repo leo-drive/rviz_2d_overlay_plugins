@@ -7,28 +7,53 @@
 #include "string.h"
 
 PluginExample::PluginExample() : Node("plugin_example") {
-    rtkStatus = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("RTK_Status", 10);
 
-    mErrorPubAvarage = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("avarage_position_error", 10);
-    mYawErrorPub = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("yaw_error_gnss",10);
-
-    gnss_real_pose_sub = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "/sensing/gnss/pose_with_covariance", 100,
-            std::bind(&PluginExample::gnss_callback, this, std::placeholders::_1));
-
-    ndt_pose_sub = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "/ndt/debug/pose_with_cov_stamped", 100,
+    ndt_pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/localization/pose_estimator/pose_with_covariance", 100,
             std::bind(&PluginExample::ndt_pose_callback, this, std::placeholders::_1));
 
-    gnss_pose_sub = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "/aw_pose_covariance_modifier/debug/pose_with_cov_stamped", 100,
+    gnss_pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/sensing/gnss/pose_with_covariance", 100,
             std::bind(&PluginExample::gnss_pose_callback, this, std::placeholders::_1));
 
-    gnss_pose_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_position_error", 10);
-    ndt_pose_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_position_error", 10);
+    ekf_pose_source_sub_ = create_subscription<std_msgs::msg::String>(
+            "/localization/autoware_pose_covariance_modifier/selected_pose_type", 100,
+            std::bind(&PluginExample::ekf_pose_source_callback, this, std::placeholders::_1));
 
-    gnss_orientation_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_orientation_error_in_degrees", 10);
-    ndt_orientation_error_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_orientation_error_in_degrees", 10);
+    gnss_position_rmse_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_position_error", 10);
+    ndt_position_rmse_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_position_error", 10);
+
+    gnss_yaw_rmse_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("gnss_yaw_error_in_degrees", 10);
+    ndt_yaw_rmse_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::Plotter2D>("ndt_yaw_error_in_degrees", 10);
+
+    ekf_pose_source_pub_ = create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("ekf_pose_source", 10);
+}
+void PluginExample::ekf_pose_source_callback(const std_msgs::msg::String::SharedPtr msg){
+    std_msgs::msg::ColorRGBA color_fg;
+    color_fg.r = 0.7f;
+    color_fg.g = 0.8f;
+    color_fg.b = 0.8f;
+    color_fg.a = 1.0f;
+    std_msgs::msg::ColorRGBA color_bg;
+    color_bg.r = 1.0f;
+    color_bg.g = 1.0f;
+    color_bg.b = 1.0f;
+    color_bg.a = 0.01f;
+
+    rviz_2d_overlay_msgs::msg::OverlayText ekf_pose_source_plug_;
+    ekf_pose_source_plug_.action = 0;
+    ekf_pose_source_plug_.text = "EKF pose sources: \n" + msg->data;
+    ekf_pose_source_plug_.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
+    ekf_pose_source_plug_.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::TOP;
+    ekf_pose_source_plug_.fg_color = color_fg;
+    ekf_pose_source_plug_.bg_color = color_bg;
+    ekf_pose_source_plug_.width = 250;
+    ekf_pose_source_plug_.height = 70;
+    ekf_pose_source_plug_.text_size = 20;
+    ekf_pose_source_plug_.line_width = 150;
+    ekf_pose_source_plug_.horizontal_distance = static_cast<int32_t>(32);
+    ekf_pose_source_plug_.vertical_distance = static_cast<int32_t>(32);
+    ekf_pose_source_pub_->publish(ekf_pose_source_plug_);
 }
 void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
 
@@ -53,7 +78,7 @@ void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarian
     plotterMsg.max_value = 1.0;
     plotterMsg.fg_color = color;
     plotterMsg.unit = "m";
-    ndt_pose_error_->publish(plotterMsg);
+    ndt_position_rmse_pub_->publish(plotterMsg);
 
 
     rviz_2d_overlay_msgs::msg::Plotter2D orientationPlotterMsg;
@@ -70,7 +95,7 @@ void PluginExample::ndt_pose_callback(const geometry_msgs::msg::PoseWithCovarian
     orientationPlotterMsg.max_value = 5.0;
     orientationPlotterMsg.fg_color = color;
     orientationPlotterMsg.unit = "degrees";
-    ndt_orientation_error_->publish(orientationPlotterMsg);
+    ndt_yaw_rmse_pub_->publish(orientationPlotterMsg);
 
 }
 
@@ -96,11 +121,12 @@ void PluginExample::gnss_pose_callback(const geometry_msgs::msg::PoseWithCovaria
     plotterMsg.max_value = 1.0;
     plotterMsg.fg_color = color;
     plotterMsg.unit = "m";
-    gnss_pose_error_->publish(plotterMsg);
+    gnss_position_rmse_pub_->publish(plotterMsg);
 
 
     rviz_2d_overlay_msgs::msg::Plotter2D orientationPlotterMsg;
     double rmse_in_degrees = std::sqrt(msg->pose.covariance[35]) * 180 / M_PI;
+
     orientationPlotterMsg.data = static_cast<float>(rmse_in_degrees);
     orientationPlotterMsg.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
     orientationPlotterMsg.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
@@ -113,50 +139,8 @@ void PluginExample::gnss_pose_callback(const geometry_msgs::msg::PoseWithCovaria
     orientationPlotterMsg.max_value = 5.0;
     orientationPlotterMsg.fg_color = color;
     orientationPlotterMsg.unit = "degrees";
-    gnss_orientation_error_->publish(orientationPlotterMsg);
+    gnss_yaw_rmse_pub_->publish(orientationPlotterMsg);
 
-}
-void PluginExample::gnss_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
-
-    double avarage_position_error = (std::sqrt(msg->pose.covariance[0]) + std::sqrt(msg->pose.covariance[7]) ) / 2;
-    std_msgs::msg::ColorRGBA color_real_gnss_;
-    color_real_gnss_.r = 0.5f;
-    color_real_gnss_.g = 0.5f;
-    color_real_gnss_.b = 0.5f;
-    color_real_gnss_.a = 1.0f;
-
-    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_avarage;
-    plotterMsg_avarage.data = static_cast<float>(avarage_position_error);
-    plotterMsg_avarage.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::LEFT;
-    plotterMsg_avarage.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg_avarage.caption = "GNSS POS RMSE";
-    plotterMsg_avarage.horizontal_distance = static_cast<int32_t>(32);
-    plotterMsg_avarage.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg_avarage.width = 200;
-    plotterMsg_avarage.height = 128;
-    plotterMsg_avarage.min_value = 0.0;
-    plotterMsg_avarage.max_value = 1.0;
-    plotterMsg_avarage.fg_color = color_real_gnss_;
-    plotterMsg_avarage.unit = "m";
-    mErrorPubAvarage->publish(plotterMsg_avarage);
-
-
-    double yaw_error = std::sqrt(msg->pose.covariance[35]) * 180 / M_PI;
-
-    rviz_2d_overlay_msgs::msg::Plotter2D plotterMsg_yaw;
-    plotterMsg_yaw.data = static_cast<float>(yaw_error);
-    plotterMsg_yaw.horizontal_alignment = rviz_2d_overlay_msgs::msg::OverlayText::RIGHT;
-    plotterMsg_yaw.vertical_alignment = rviz_2d_overlay_msgs::msg::OverlayText::BOTTOM;
-    plotterMsg_yaw.caption = "GNSS Yaw RMSE";
-    plotterMsg_yaw.horizontal_distance = static_cast<int32_t>(32);
-    plotterMsg_yaw.vertical_distance = static_cast<int32_t>(32);
-    plotterMsg_yaw.width = 200;
-    plotterMsg_yaw.height = 128;
-    plotterMsg_yaw.min_value = 0.0;
-    plotterMsg_yaw.max_value = 5.0;
-    plotterMsg_yaw.fg_color = color_real_gnss_;
-    plotterMsg_yaw.unit = "degrees";
-    mYawErrorPub->publish(plotterMsg_yaw);
 }
 
 int main(int argc, char **argv) {
